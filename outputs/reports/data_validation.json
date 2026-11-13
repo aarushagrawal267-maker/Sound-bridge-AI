@@ -1,0 +1,68 @@
+{
+  "raw_rows": 114000,
+  "schema": {
+    "track_id": true,
+    "track_name": true,
+    "artists": true,
+    "artist_id": false,
+    "album_name": true,
+    "album_id": false,
+    "genre": true,
+    "subgenre": false,
+    "popularity": true,
+    "duration_ms": true,
+    "explicit": true,
+    "danceability": true,
+    "energy": true,
+    "key": true,
+    "loudness": true,
+    "mode": true,
+    "speechiness": true,
+    "acousticness": true,
+    "instrumentalness": true,
+    "liveness": true,
+    "valence": true,
+    "tempo": true,
+    "time_signature": true,
+    "release_date": false,
+    "image_url": false
+  },
+  "missing": {
+    "track_name": 1,
+    "artists": 1,
+    "album_name": 1
+  },
+  "out_of_range": {
+    "tempo": 157,
+    "time_signature": 163,
+    "duration_ms": 1
+  },
+  "duplicate_track_id_rows": 24259,
+  "duplicate_title_artist_releases": 8534,
+  "invalid_rows": 164,
+  "notes": [
+    "157 rows report tempo = 0 BPM (audio analysis failure); excluded.",
+    "163 rows report time signature 0 (analysis failure); excluded.",
+    "16020 rows have popularity 0. Spotify popularity is relative and recency-weighted; 0 often marks a duplicate release whose plays are credited to another version."
+  ],
+  "clean_tracks": 79868,
+  "clean_primary_artists": 17635,
+  "genres": 114,
+  "model_inputs": [
+    "danceability",
+    "energy",
+    "valence",
+    "acousticness",
+    "instrumentalness",
+    "speechiness",
+    "liveness",
+    "tempo",
+    "loudness",
+    "duration_ms",
+    "mode",
+    "key_sin",
+    "key_cos",
+    "time_signature",
+    "explicit"
+  ]
+}

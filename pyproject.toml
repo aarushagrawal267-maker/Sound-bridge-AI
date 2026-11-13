@@ -1,0 +1,6 @@
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+filterwarnings = ["ignore:n_quantiles:UserWarning"]
+
+[tool.ruff]
+line-length = 130

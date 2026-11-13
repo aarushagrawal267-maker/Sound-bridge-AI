@@ -1,0 +1,4 @@
+step,rows_before,rows_after,removed
+exclude rows with missing/invalid core values,114000,113836,164
+merge rows sharing a track_id (genres -> list),113836,89578,24258
+merge alternative releases of the same song,89578,79868,9710

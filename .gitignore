@@ -1,0 +1,30 @@
+# environments
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+
+# data (downloaded / derived; rebuilt by scripts/setup_all.py)
+data/raw/*
+!data/raw/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
+*.part
+
+# large or regenerable model artifacts (the trained encoder weights and fitted
+# feature pipeline ARE committed so results are inspectable)
+models/*.npy
+models/kmeans.joblib
+models/popularity_xgb.joblib
+
+# personal feedback never leaves the user's machine
+data/feedback/*
+!data/feedback/.gitkeep
+
+# misc
+.DS_Store
+Thumbs.db
+.streamlit/secrets.toml
+.env

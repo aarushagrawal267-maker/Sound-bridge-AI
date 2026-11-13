@@ -1,0 +1,68 @@
+# SoundBridge AI configuration.
+# Every weight below is an experimental starting point, not a claim of optimality.
+# The Experiment Lab compares alternatives; see PROJECT_REPORT.md for results.
+
+seed: 42
+
+paths:
+  raw_data: data/raw/spotify_tracks.csv
+  processed_dir: data/processed
+  models_dir: models
+  outputs_dir: outputs
+  feedback_dir: data/feedback
+  experiments_dir: outputs/experiments
+
+dataset:
+  # Public mirrors of the Kaggle "Spotify Tracks Dataset" (maharshipandya, 114,000 rows).
+  # Both mirrors were verified to serve byte-identical files (sha256 below).
+  urls:
+    - https://raw.githubusercontent.com/samanyuvemuri/music-recommendation-engine/main/dataset.csv
+    - https://raw.githubusercontent.com/wfoster01/csc475spotify/main/dataset.csv
+  sha256: b202fa49909b2d5cef71a04b1d21243cfeb36414535f2ca9272aa646721177bd
+  kaggle_page: https://www.kaggle.com/datasets/maharshipandya/-spotify-tracks-dataset
+
+model:
+  embedding_dim: 32
+  hidden_dim: 256
+  dropout: 0.1
+  epochs: 40
+  batch_size: 1024
+  learning_rate: 0.002
+  weight_decay: 0.0001
+  temperature: 0.1
+  loss_weights:
+    contrastive: 1.0
+    genre: 1.0
+    popularity: 0.5
+  test_artist_fraction: 0.15
+
+recommendation:
+  candidate_pool: 600          # nearest neighbours retrieved before reranking
+  top_k: 20
+  max_tracks_per_artist: 2
+  min_relevance: 0.55          # similarity floor for discovery-oriented strategies
+  mmr_lambda: 0.7              # 1.0 = pure relevance, 0.0 = pure diversity
+  lesser_known_popularity: 35  # popularity at or below this is "lesser-known" in this dataset
+
+hybrid_presets:
+  relevance_first: {relevance: 1.00, novelty: 0.00, diversity: 0.00, repetition: 0.10}
+  balanced:        {relevance: 0.70, novelty: 0.15, diversity: 0.15, repetition: 0.20}
+  discovery:       {relevance: 0.55, novelty: 0.30, diversity: 0.15, repetition: 0.20}
+  explorer:        {relevance: 0.45, novelty: 0.25, diversity: 0.30, repetition: 0.25}
+
+hidden_gems:
+  # top_percent: candidate must be among the top X% of the catalogue by match to your profile
+  # max_artist_exposure: highest popularity of the artist's tracks within this dataset
+  levels:
+    familiar: {max_artist_exposure: 55, top_percent: 1.0, novelty_weight: 0.15}
+    balanced: {max_artist_exposure: 40, top_percent: 2.5, novelty_weight: 0.30}
+    deep:     {max_artist_exposure: 25, top_percent: 5.0, novelty_weight: 0.45}
+
+experiments:
+  n_seed_sets: 200
+  seeds_per_set: 3
+  k: 10
+
+feedback:
+  profile_learning_rate: 0.25  # Rocchio step for liked/disliked tracks
+  min_labels_for_personal_model: 20

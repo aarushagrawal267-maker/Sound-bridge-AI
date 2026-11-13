@@ -1,0 +1,5 @@
+{'seed': 7, 'encoder_artist_p@10': 0.12538, 'raw_artist_p@10': 0.0676, 'encoder_genre_agree@10': 0.26584, 'raw_genre_agree@10': 0.16894, 'genre_top5': 0.5971543670180852, 'popularity_r2': 0.164836585521698}
+{'seed': 123, 'encoder_artist_p@10': 0.11756, 'raw_artist_p@10': 0.05858, 'encoder_genre_agree@10': 0.24568, 'raw_genre_agree@10': 0.14914, 'genre_top5': 0.5561342592592593, 'popularity_r2': 0.18314313888549805}
+ seed  encoder_artist_p@10  raw_artist_p@10  encoder_genre_agree@10  raw_genre_agree@10  genre_top5  popularity_r2
+    7               0.1254           0.0676                  0.2658              0.1689      0.5972         0.1648
+  123               0.1176           0.0586                  0.2457              0.1491      0.5561         0.1831

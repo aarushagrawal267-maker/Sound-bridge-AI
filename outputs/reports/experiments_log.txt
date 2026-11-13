@@ -1,0 +1,96 @@
+
+=== strategy_comparison (39.3 s) -> /home/user/Sound-bridge-AI/outputs/experiments/2026-11-13_182327_strategy_comparison
+strategy                  content_raw  content  popularity_ranked  genre_aware  popularity_aware  diversity_mmr  hybrid
+relevance_learned               0.630    0.802              0.764        0.757             0.791          0.791   0.774
+relevance_raw_features          0.909    0.758              0.707        0.707             0.749          0.744   0.732
+intra_list_diversity            0.388    0.248              0.332        0.314             0.280          0.344   0.329
+artist_diversity                0.967    0.952              0.940        0.814             0.949          0.977   0.995
+audio_feature_diversity         0.193    0.353              0.401        0.401             0.377          0.423   0.414
+novelty                         0.532    0.526              0.298        0.504             0.711          0.527   0.582
+repeated_artist_pct             0.033    0.048              0.059        0.186             0.051          0.023   0.005
+duplicate_track_pct             0.000    0.000              0.000        0.000             0.000          0.000   0.000
+mean_pairwise_similarity        0.612    0.752              0.668        0.686             0.720          0.656   0.671
+mean_popularity                36.768   37.602             66.396       39.145            22.624         37.986  33.830
+median_popularity              36.988   37.898             65.312       39.465            22.158         38.330  34.042
+lesser_known_share              0.213    0.191              0.003        0.162             0.494          0.188   0.290
+mean_artist_exposure           49.477   49.907             71.785       52.355            30.798         49.659  43.626
+genre_unique_ratio              0.754    0.670              0.687        0.132             0.655          0.733   0.308
+genre_entropy                   2.717    2.444              2.540        0.184             2.399          2.633   0.942
+proxy_genre_precision           0.150    0.272              0.192        0.998             0.226          0.250   0.821
+catalog_coverage                0.024    0.024              0.022        0.024             0.023          0.024   0.024
+artist_coverage                 0.090    0.090              0.068        0.079             0.082          0.093   0.095
+exposure_gini                   0.180    0.180              0.330        0.257             0.230          0.159   0.142
+
+=== hybrid_presets (27.2 s) -> /home/user/Sound-bridge-AI/outputs/experiments/2026-11-13_182355_hybrid_presets
+strategy                  hybrid@relevance_first  hybrid@balanced  hybrid@discovery  hybrid@explorer
+relevance_learned                          0.790            0.774             0.761            0.734
+relevance_raw_features                     0.745            0.732             0.722            0.686
+intra_list_diversity                       0.266            0.329             0.357            0.432
+artist_diversity                           0.962            0.995             0.998            0.999
+audio_feature_diversity                    0.370            0.414             0.433            0.488
+novelty                                    0.518            0.582             0.660            0.654
+repeated_artist_pct                        0.038            0.005             0.002            0.001
+duplicate_track_pct                        0.000            0.000             0.000            0.000
+mean_pairwise_similarity                   0.734            0.671             0.643            0.568
+mean_popularity                           38.136           33.830            27.995           28.903
+median_popularity                         38.535           34.042            27.850           28.325
+lesser_known_share                         0.178            0.290             0.417            0.409
+mean_artist_exposure                      50.473           43.626            35.643           36.169
+genre_unique_ratio                         0.415            0.308             0.294            0.238
+genre_entropy                              1.401            0.942             0.882            0.633
+proxy_genre_precision                      0.694            0.821             0.822            0.896
+catalog_coverage                           0.024            0.024             0.023            0.024
+artist_coverage                            0.091            0.095             0.093            0.093
+exposure_gini                              0.174            0.142             0.161            0.157
+
+=== novelty_sweep (41.7 s) -> /home/user/Sound-bridge-AI/outputs/experiments/2026-11-13_182437_novelty_sweep
+strategy                  hybrid@novelty=0.0  hybrid@novelty=0.1  hybrid@novelty=0.2  hybrid@novelty=0.3  hybrid@novelty=0.45  hybrid@novelty=0.6
+relevance_learned                      0.774               0.775               0.773               0.772                0.767               0.760
+relevance_raw_features                 0.732               0.733               0.733               0.733                0.727               0.718
+intra_list_diversity                   0.327               0.328               0.330               0.332                0.344               0.360
+artist_diversity                       0.994               0.995               0.994               0.994                0.995               0.994
+audio_feature_diversity                0.410               0.410               0.414               0.419                0.425               0.437
+novelty                                0.517               0.560               0.605               0.649                0.712               0.766
+repeated_artist_pct                    0.006               0.005               0.006               0.005                0.004               0.005
+duplicate_track_pct                    0.000               0.000               0.000               0.000                0.000               0.000
+mean_pairwise_similarity               0.673               0.672               0.670               0.668                0.656               0.640
+mean_popularity                       38.328              35.218              32.040              28.720               23.552              19.267
+median_popularity                     38.555              35.638              32.180              28.670               23.762              18.712
+lesser_known_share                     0.183               0.250               0.327               0.401                0.508               0.585
+mean_artist_exposure                  50.376              46.018              41.268              36.887               30.351              24.652
+genre_unique_ratio                     0.292               0.304               0.320               0.346                0.395               0.442
+genre_entropy                          0.866               0.921               0.992               1.115                1.322               1.533
+proxy_genre_precision                  0.850               0.832               0.800               0.754                0.676               0.602
+catalog_coverage                       0.024               0.024               0.024               0.024                0.023               0.022
+artist_coverage                        0.094               0.095               0.095               0.093                0.087               0.079
+exposure_gini                          0.150               0.144               0.146               0.159                0.205               0.263
+
+=== diversity_sweep (34.8 s) -> /home/user/Sound-bridge-AI/outputs/experiments/2026-11-13_182512_diversity_sweep
+strategy                  diversity_mmr@lambda=1.0  diversity_mmr@lambda=0.85  diversity_mmr@lambda=0.7  diversity_mmr@lambda=0.5  diversity_mmr@lambda=0.3
+relevance_learned                            0.802                      0.800                     0.791                     0.748                     0.654
+relevance_raw_features                       0.757                      0.754                     0.744                     0.696                     0.604
+intra_list_diversity                         0.249                      0.291                     0.344                     0.446                     0.586
+artist_diversity                             0.962                      0.963                     0.977                     0.983                     0.992
+audio_feature_diversity                      0.354                      0.385                     0.423                     0.489                     0.589
+novelty                                      0.526                      0.525                     0.527                     0.525                     0.519
+repeated_artist_pct                          0.038                      0.037                     0.023                     0.016                     0.008
+duplicate_track_pct                          0.000                      0.000                     0.000                     0.000                     0.000
+mean_pairwise_similarity                     0.751                      0.709                     0.656                     0.554                     0.414
+mean_popularity                             37.621                     37.829                    37.986                    38.152                    37.704
+median_popularity                           37.962                     38.115                    38.330                    38.838                    37.915
+lesser_known_share                           0.194                      0.192                     0.188                     0.193                     0.196
+mean_artist_exposure                        49.811                     49.960                    49.659                    50.197                    50.489
+genre_unique_ratio                           0.676                      0.689                     0.733                     0.792                     0.797
+genre_entropy                                2.468                      2.501                     2.633                     2.836                     2.834
+proxy_genre_precision                        0.270                      0.267                     0.250                     0.194                     0.292
+catalog_coverage                             0.024                      0.024                     0.024                     0.024                     0.024
+artist_coverage                              0.091                      0.091                     0.093                     0.092                     0.093
+exposure_gini                                0.174                      0.172                     0.159                     0.162                     0.157
+
+Wrote /home/user/Sound-bridge-AI/outputs/reports/experiment_results.md
+wrote /home/user/Sound-bridge-AI/outputs/figures/eda_distributions.png
+wrote /home/user/Sound-bridge-AI/outputs/figures/eda_correlations.png
+wrote /home/user/Sound-bridge-AI/outputs/figures/eda_popularity_vs_features.png
+wrote /home/user/Sound-bridge-AI/outputs/figures/artist_exposure_concentration.png
+wrote /home/user/Sound-bridge-AI/outputs/figures/experiment_strategy_comparison.png
+wrote /home/user/Sound-bridge-AI/outputs/figures/experiment_novelty_sweep.png

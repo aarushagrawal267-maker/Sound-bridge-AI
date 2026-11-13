@@ -1,0 +1,18 @@
+[theme]
+base = "dark"
+primaryColor = "#8b5cf6"
+backgroundColor = "#09080f"
+secondaryBackgroundColor = "#15131f"
+textColor = "#ECEAF6"
+font = "sans serif"
+
+[server]
+headless = true
+runOnSave = false
+folderWatchBlacklist = [".venv", "venv", "data", "models", "outputs"]
+
+[browser]
+gatherUsageStats = false
+
+[client]
+toolbarMode = "minimal"

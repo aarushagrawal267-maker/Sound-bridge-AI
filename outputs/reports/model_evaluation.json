@@ -1,0 +1,81 @@
+{
+  "dataset": {
+    "tracks": 79868,
+    "train_tracks": 67758,
+    "test_tracks": 12110,
+    "test_artists": 2645,
+    "genres": 114
+  },
+  "training": {
+    "epochs": 40,
+    "seconds": 142.7,
+    "final_loss": {
+      "epoch": 40,
+      "loss": 7.282604096540764,
+      "contrastive": 4.351054212940273,
+      "genre": 2.8894199364220916,
+      "popularity": 0.08425982107422245
+    },
+    "config": {
+      "embedding_dim": 32,
+      "hidden_dim": 256,
+      "dropout": 0.1,
+      "epochs": 40,
+      "batch_size": 1024,
+      "learning_rate": 0.002,
+      "weight_decay": 0.0001,
+      "temperature": 0.1,
+      "loss_weights": {
+        "contrastive": 1.0,
+        "genre": 1.0,
+        "popularity": 0.5
+      },
+      "test_artist_fraction": 0.15
+    }
+  },
+  "retrieval_held_out_artists": {
+    "SoundBridge Encoder (learned, 32-d)": {
+      "artist_precision@10": 0.10456,
+      "artist_hit@10": 0.4338,
+      "genre_agreement@10": 0.22698,
+      "genre_agreement_chance@10": 0.01586,
+      "n_queries": 5000
+    },
+    "Raw audio features (z-score, 9-d)": {
+      "artist_precision@10": 0.05394,
+      "artist_hit@10": 0.2816,
+      "genre_agreement@10": 0.13738,
+      "genre_agreement_chance@10": 0.01586,
+      "n_queries": 5000
+    },
+    "Encoder inputs without training (15-d)": {
+      "artist_precision@10": 0.05742,
+      "artist_hit@10": 0.3072,
+      "genre_agreement@10": 0.1471,
+      "genre_agreement_chance@10": 0.01586,
+      "n_queries": 5000
+    }
+  },
+  "encoder_heads": {
+    "genre_top1_accuracy": 0.25565648078918457,
+    "genre_top5_accuracy": 0.5469859620148637,
+    "popularity_r2": 0.14225202798843384,
+    "popularity_mae": 12.851353645324707,
+    "popularity_mae_mean_baseline": 14.77910041809082
+  },
+  "baselines": {
+    "logistic_regression_genre": {
+      "genre_top1_accuracy": 0.19760528206825256,
+      "genre_top5_accuracy": 0.466804293971924
+    },
+    "xgboost_popularity": {
+      "popularity_r2": 0.16866648197174072,
+      "popularity_mae": 12.925764083862305
+    },
+    "mean_predictor_popularity_mae": 14.784847259521484
+  },
+  "pca_explained_variance": [
+    0.1115870252251625,
+    0.10336457192897797
+  ]
+}
