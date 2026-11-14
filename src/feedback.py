@@ -57,10 +57,10 @@ class JsonlStore:
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self.sheet = None
         if directory is None:
-            from .storage import SheetTable, sheets_enabled
+            from .storage import make_table, sheets_enabled
 
             if sheets_enabled():
-                self.sheet = SheetTable(Path(filename).stem)
+                self.sheet = make_table(Path(filename).stem)
 
     @property
     def backend(self) -> str:

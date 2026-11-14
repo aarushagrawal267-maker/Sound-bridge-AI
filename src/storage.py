@@ -15,7 +15,14 @@ Configuration (Streamlit secrets, e.g. the "Secrets" box on Streamlit Community 
 
 The sheet must be shared (Editor) with the service account's e-mail address. Each store
 writes to its own worksheet (tab) with columns: timestamp, record_json.
-Without this configuration every store falls back to local JSON-lines files.
+Simpler alternative (no Google Cloud): paste deploy/google_apps_script.gs into the Sheet,
+deploy it as a web app and set
+
+    [storage]
+    webhook_url = "https://script.google.com/macros/s/.../exec"
+    token = "the TOKEN value from the script"
+
+Without either configuration every store falls back to local JSON-lines files.
 """
 from __future__ import annotations
 
@@ -46,11 +53,59 @@ def _spreadsheet():
     return client.open_by_url(s["storage"]["sheet_url"])
 
 
+def _webhook() -> tuple[str, str] | None:
+    """Apps Script web-app receiver (deploy/google_apps_script.gs): simplest setup, no Google Cloud."""
+    st = _secrets().get("storage", {})
+    if st.get("webhook_url") and st.get("token"):
+        return st["webhook_url"], st["token"]
+    return None
+
+
 def sheets_enabled() -> bool:
+    if _webhook() is not None:
+        return True
     try:
         return _spreadsheet() is not None
     except Exception:
         return False
+
+
+class WebhookTable:
+    """Same interface as SheetTable, talking to the Apps Script receiver over HTTPS."""
+
+    def __init__(self, name: str):
+        self.url, self.token = _webhook()
+        self.name = name
+
+    def _call(self, action: str, **extra) -> dict:
+        import requests
+
+        r = requests.post(self.url, json={"token": self.token, "table": self.name, "action": action, **extra},
+                          timeout=20)
+        r.raise_for_status()
+        data = r.json()
+        if not data.get("ok"):
+            raise RuntimeError(f"Sheet receiver error: {data.get('error')}")
+        return data
+
+    def append(self, record: dict) -> None:
+        self._call("append", record=json.loads(json.dumps(record, default=str)))
+
+    def load(self) -> pd.DataFrame:
+        rows = []
+        for v in self._call("load").get("rows", []):
+            try:
+                rows.append(json.loads(v))
+            except (TypeError, json.JSONDecodeError):
+                continue
+        return pd.DataFrame(rows)
+
+    def clear(self) -> None:
+        self._call("clear")
+
+
+def make_table(name: str):
+    return WebhookTable(name) if _webhook() is not None else SheetTable(name)
 
 
 class SheetTable:

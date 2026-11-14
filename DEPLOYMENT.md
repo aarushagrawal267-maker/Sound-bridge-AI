@@ -6,6 +6,27 @@ repo is already there) and a Google account.
 
 ---
 
+## Easiest option: Apps Script receiver (no Google Cloud, about 5 min)
+1. Create a blank Google Sheet.
+2. Open **Extensions → Apps Script**, delete everything there, and paste the contents of
+   [`deploy/google_apps_script.gs`](deploy/google_apps_script.gs). Set `TOKEN` to a long random text, then click
+   **Save**.
+3. Click **Deploy → New deployment → ⚙ → Web app**. Set *Execute as*: **Me** and *Who has access*: **Anyone**, then
+   click **Deploy**. Allow the permission prompt (Advanced → Go to project → Allow).
+4. Copy the **Web app URL** (it ends in `/exec`).
+5. In Streamlit secrets put:
+   ```toml
+   admin_password = "your-researcher-password"
+   [storage]
+   webhook_url = "https://script.google.com/macros/s/.../exec"
+   token = "the same TOKEN as in the script"
+   ```
+You can then skip Steps 1–2 below and go straight to Step 3 (deploy).
+
+---
+
+## Alternative: service account
+
 ## Step 1: Create the Google Sheet (2 min)
 1. Go to <https://sheets.google.com> and create a blank sheet named, for example, `SoundBridge pilot responses`.
 2. Copy its URL from the address bar. You will need it in Step 3.
@@ -25,7 +46,7 @@ This is the "robot" account the app uses to write into your sheet.
 1. Go to <https://share.streamlit.io>, sign in with GitHub and click **Create app → Deploy a public app from GitHub**.
 2. Fill in:
    * **Repository:** `aarushagrawal267-maker/Sound-bridge-AI`
-   * **Branch:** `claude/stoic-gauss-hox5ad` (or `main` once merged)
+   * **Branch:** `main`
    * **Main file path:** `app.py`
    * **App URL:** choose one, for example `soundbridge-ai`
 3. Open **Advanced settings**:
