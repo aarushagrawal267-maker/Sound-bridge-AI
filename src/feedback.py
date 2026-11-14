@@ -49,15 +49,33 @@ class FeedbackEvent:
 
 
 class JsonlStore:
+    """Append-only record store: a Google Sheet tab when configured (see src/storage.py),
+    otherwise a local JSON-lines file. Passing `directory` always forces local files."""
+
     def __init__(self, filename: str, directory: Path | None = None):
         self.path = (directory or path("feedback_dir")) / filename
         self.path.parent.mkdir(parents=True, exist_ok=True)
+        self.sheet = None
+        if directory is None:
+            from .storage import SheetTable, sheets_enabled
+
+            if sheets_enabled():
+                self.sheet = SheetTable(Path(filename).stem)
+
+    @property
+    def backend(self) -> str:
+        return "Google Sheet" if self.sheet is not None else f"local file ({self.path.name})"
 
     def append(self, record: dict) -> None:
+        if self.sheet is not None:
+            self.sheet.append(record)
+            return
         with open(self.path, "a", encoding="utf-8") as fh:
             fh.write(json.dumps(record, default=str) + "\n")
 
     def load(self) -> pd.DataFrame:
+        if self.sheet is not None:
+            return self.sheet.load()
         if not self.path.exists():
             return pd.DataFrame()
         rows = []
@@ -72,6 +90,9 @@ class JsonlStore:
         return pd.DataFrame(rows)
 
     def clear(self) -> None:
+        if self.sheet is not None:
+            self.sheet.clear()
+            return
         if self.path.exists():
             self.path.unlink()
 

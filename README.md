@@ -292,6 +292,10 @@ Optional extras:
 * **Spotify artwork:** set `SPOTIFY_CLIENT_ID` and `SPOTIFY_CLIENT_SECRET` (Client Credentials app from
   developer.spotify.com) to show album artwork on *Why This Song?*. Without them, covers are generated from audio features.
 
+### Deploying online for the pilot study
+See **[DEPLOYMENT.md](DEPLOYMENT.md)** for a free Streamlit Community Cloud deployment. Responses are stored in
+your own Google Sheet and protected by a researcher login.
+
 ## 15. Using the application
 | Page | What it does |
 |---|---|

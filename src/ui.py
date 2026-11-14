@@ -356,6 +356,7 @@ def sidebar(engine) -> None:
         else:
             st.markdown('<div class="sb-note" style="font-size:.78rem">Add songs you enjoy on <b>Music Discovery</b> '
                         'to build your Musical DNA.</div>', unsafe_allow_html=True)
+        admin_login()
         fb = st.session_state.fb
         if fb.events:
             st.caption(f"Feedback this session: {len(fb.events)} · liked {len(fb.liked)} · disliked {len(fb.disliked)}")
@@ -472,3 +473,42 @@ def short_reason_for(engine, row: pd.Series, seeds: list[int]) -> str:
         if rel:
             text += f" · new genre: {rel[0]} (close to your {rel[1]})"
     return text
+
+
+# ------------------------------------------------------------------ researcher (admin) access
+def is_admin() -> bool:
+    """True locally (no admin password configured) or after the researcher logs in."""
+    from .storage import admin_password
+
+    return admin_password() is None or bool(st.session_state.get("admin_ok"))
+
+
+def admin_login() -> None:
+    from .storage import admin_password
+
+    pw = admin_password()
+    if pw is None:
+        return
+    with st.sidebar.expander("Researcher login", icon=":material/lock:", expanded=False):
+        if st.session_state.get("admin_ok"):
+            st.caption("Logged in as researcher.")
+            if st.button("Log out", key="admin_logout"):
+                st.session_state.admin_ok = False
+                st.rerun()
+        else:
+            entered = st.text_input("Password", type="password", key="admin_pw")
+            if entered:
+                import hmac
+
+                st.session_state.admin_ok = hmac.compare_digest(entered, pw)
+                if not st.session_state.admin_ok:
+                    st.error("Wrong password")
+                else:
+                    st.rerun()
+
+
+def admin_only(what: str) -> bool:
+    if is_admin():
+        return True
+    st.info(f"{what} is limited to the researcher on this deployment. Log in from the sidebar.", icon=":material/lock:")
+    return False

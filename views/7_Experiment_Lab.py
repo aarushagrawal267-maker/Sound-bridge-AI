@@ -77,6 +77,7 @@ with tab_saved:
             st.markdown(exp["report"])
 
 with tab_run:
+  if ui.admin_only("Running new experiments"):
     st.markdown("Pick strategies, add custom hybrid weightings, and run. Every run is saved to `outputs/experiments/`.")
     strategies = st.multiselect("Strategies", list(STRATEGIES), default=["content_raw", "content", "popularity_ranked", "diversity_mmr", "hybrid"],
                                 format_func=STRATEGIES.get)

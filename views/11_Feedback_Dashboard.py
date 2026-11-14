@@ -45,7 +45,7 @@ with c2:
     st.caption("A logistic-regression layer on the encoder's embeddings, trained only on your own labels. It switches on "
                "once there are enough labels of both kinds and then nudges candidate scores.")
 
-ui.section("Stored feedback", "consented events on this computer")
+ui.section("Stored feedback", f"consented events · stored in {store.backend}")
 if summ["n_events"] == 0:
     ui.empty_state("No stored feedback yet", "Turn on consent and rate some recommendations. This dashboard will then "
                    "analyse the real events — it never shows invented data.", "🗂️")
@@ -72,6 +72,8 @@ else:
         lk = rated[(rated["popularity"] > 0) & (rated["popularity"] <= engine.lesser_known)]
         if len(lk):
             st.caption(f"Lesser-known tracks rated: {len(lk)} · liked: {lk['feedback'].isin(POSITIVE).mean():.0%}")
+    if not ui.admin_only("Viewing, exporting and deleting raw events"):
+        st.stop()
     with st.expander("Raw events"):
         st.dataframe(data, width="stretch")
     c5, c6 = st.columns(2)
