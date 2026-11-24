@@ -45,7 +45,7 @@ This is the "robot" account the app uses to write into your sheet.
 ## Step 3: Deploy on Streamlit Community Cloud (5 min)
 1. Go to <https://share.streamlit.io>, sign in with GitHub and click **Create app → Deploy a public app from GitHub**.
 2. Fill in:
-   * **Repository:** `aarushagrawal267-maker/Sound-bridge-AI`
+   * **Repository:** `aarushagrawal267-maker/sound-bridge-ai`
    * **Branch:** `main`
    * **Main file path:** `app.py`
    * **App URL:** choose one, for example `soundbridge-ai`

@@ -11,10 +11,27 @@ and visibility for lesser-known artists, and it measures the answer instead of a
 * A neural network trained from scratch on CPU (about 2.5 minutes), evaluated on artists it never saw.
 * Seven ranking strategies, compared in a reproducible Experiment Lab.
 * A 14-page Streamlit app with a custom dark interface.
-* 110 automated tests.
+* 113 automated tests (pytest).
 
 > SoundBridge AI is independent and not affiliated with Spotify. It does not reproduce any proprietary
 > recommendation algorithm. Popularity is used only as an **exposure proxy**, never as a measure of quality.
+
+### Quick start (macOS / Linux)
+```bash
+git clone https://github.com/aarushagrawal267-maker/sound-bridge-ai.git && cd sound-bridge-ai
+python3 -m venv .venv && source .venv/bin/activate
+pip install torch --index-url https://download.pytorch.org/whl/cpu && pip install -r requirements.txt
+python scripts/setup_all.py      # download + clean the dataset, train the encoder (about 3-6 min on CPU)
+streamlit run app.py             # open http://localhost:8501
+```
+Windows instructions are in [section 14](#14-installation-windows).
+
+### Screenshots
+| Home | Music Discovery |
+|---|---|
+| ![Home page](outputs/figures/app_home.png) | ![Music Discovery page](outputs/figures/app_music_discovery.png) |
+| **Hidden Gems** | **Why This Song?** |
+| ![Hidden Gems page](outputs/figures/app_hidden_gems.png) | ![Why This Song page](outputs/figures/app_why_this_song.png) |
 
 ---
 
@@ -37,6 +54,7 @@ and visibility for lesser-known artists, and it measures the answer instead of a
 16. [Testing](#16-testing)
 17. [Limitations](#17-limitations)
 18. [Future improvements](#18-future-improvements)
+19. [License](#19-license)
 
 ---
 
@@ -135,7 +153,7 @@ src/
   ui.py                     design system: CSS, generative artwork, cards, state
 scripts/                    setup_all, build_artifacts, train_model, run_experiments,
                             make_figures, seed_robustness
-tests/                      110 pytest tests
+tests/                      113 pytest tests
 models/                     trained encoder weights and fitted feature pipeline (committed);
                             embeddings and other arrays are rebuilt by setup
 outputs/                    evaluation reports, experiment runs, figures
@@ -264,8 +282,8 @@ Every reason is computed:
 You need Python 3.11 or newer (from python.org; tick "Add python.exe to PATH") and Git. Run these in **Command Prompt**:
 
 ```bat
-git clone https://github.com/aarushagrawal267-maker/Sound-bridge-AI.git
-cd Sound-bridge-AI
+git clone https://github.com/aarushagrawal267-maker/sound-bridge-ai.git
+cd sound-bridge-ai
 py -3 -m venv .venv
 .venv\Scripts\activate
 python -m pip install --upgrade pip
@@ -274,8 +292,8 @@ pip install -r requirements.txt
 python scripts\setup_all.py
 ```
 `setup_all.py` downloads the dataset (about 20 MB, checksum-verified), cleans it and trains the encoder
-(about 3–6 minutes on a laptop CPU). You can skip this step: the app shows a **Build SoundBridge now** button on
-first launch that does the same thing.
+(about 3–6 minutes on a laptop CPU). You can skip this step: if the data and model are missing, the app runs the
+same build automatically on first launch and shows its progress.
 
 The CPU-only PyTorch wheel above is optional but much smaller. Plain `pip install -r requirements.txt` also works.
 
@@ -321,7 +339,7 @@ Tip: append `?demo=indie` (or `electronic`, `acoustic`, `hiphop`) to the URL to 
 ```bat
 python -m pytest
 ```
-The 110 tests cover loading, validation, preprocessing, feature pipelines (including missing features), Musical
+The 113 tests cover loading, validation, preprocessing, feature pipelines (including missing features), Musical
 DNA, every strategy, similarity maths, MMR and the hybrid scoring formula, artist caps, de-duplication, Hidden
 Gems rules, listening-mode constraints, explanations (exact decomposition and attribution completeness), metrics,
 feedback storage and updates, model training, persistence and reproduction of stored embeddings, and every app
@@ -348,3 +366,7 @@ page rendered with and without seeds.
 * Approximate nearest-neighbour indexing (FAISS or HNSW) for catalogues in the millions.
 * Fairness-aware exposure constraints across genres and regions, evaluated over time.
 * Collaborative signals from consented listening data.
+
+## 19. License
+The source code is released under the [MIT License](LICENSE). The Spotify Tracks Dataset is **not** included in this
+repository; it is downloaded at setup time and remains subject to the terms published by its author on Kaggle.
