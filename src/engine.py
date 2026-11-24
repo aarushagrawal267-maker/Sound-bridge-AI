@@ -20,7 +20,14 @@ from .popularity_ranking import artist_exposure, blended_novelty, exposure_gap, 
 
 
 class ArtifactsMissing(RuntimeError):
-    pass
+    """Raised when the derived data/model artifacts are absent, incomplete or inconsistent."""
+
+
+# derived arrays written by scripts/train_model.py and read by the engine or the pages
+REQUIRED_ARRAYS = [
+    "embeddings.npy", "raw_features.npy", "genre_probs.npy", "pred_popularity.npy",
+    "clusters.npy", "coords_2d.npy", "test_idx.npy",
+]
 
 
 @dataclass
@@ -34,7 +41,9 @@ class SoundBridgeEngine:
     def __init__(self, load_model: bool = True):
         self.cfg = load_config()
         mdir, pdir = path("models_dir"), path("processed_dir")
-        needed = [pdir / "tracks.parquet", mdir / "embeddings.npy", mdir / "soundbridge_encoder.pt"]
+        # every file loaded below: a build interrupted half-way must trigger a rebuild, not a traceback
+        needed = [pdir / "tracks.parquet", mdir / "feature_pipeline.joblib", mdir / "soundbridge_encoder.pt"]
+        needed += [mdir / f for f in REQUIRED_ARRAYS]
         missing = [str(p) for p in needed if not p.exists()]
         if missing:
             raise ArtifactsMissing(
@@ -51,6 +60,20 @@ class SoundBridgeEngine:
         self.pred_popularity = np.load(mdir / "pred_popularity.npy")
         self.clusters = np.load(mdir / "clusters.npy").astype(int)
         self.coords = np.load(mdir / "coords_2d.npy")
+        stale = [
+            f"{name} ({len(arr)} rows)"
+            for name, arr in (
+                ("embeddings.npy", self.embeddings), ("raw_features.npy", self.raw_z),
+                ("genre_probs.npy", self.genre_probs), ("pred_popularity.npy", self.pred_popularity),
+                ("clusters.npy", self.clusters), ("coords_2d.npy", self.coords),
+            )
+            if len(arr) != len(self.tracks)
+        ]
+        if stale:
+            raise ArtifactsMissing(
+                f"Model artifacts are out of date: tracks.parquet has {len(self.tracks)} tracks but "
+                + ", ".join(stale) + ". Run `python scripts/setup_all.py --reuse-weights` to rebuild them."
+            )
         self.dna_features = [f for f in DNA_FEATURES if f in self.tracks.columns]
         self.popularity = self.tracks["popularity"].to_numpy(dtype=np.float32)
         self.artists = self.tracks["primary_artist"].to_numpy()
@@ -78,7 +101,21 @@ class SoundBridgeEngine:
         if load_model:
             from .model import SoundBridgeEncoder
 
-            self.model, self.model_meta = SoundBridgeEncoder.load(mdir / "soundbridge_encoder.pt")
+            try:
+                self.model, self.model_meta = SoundBridgeEncoder.load(mdir / "soundbridge_encoder.pt")
+            except Exception as exc:  # truncated download, incompatible format ...
+                raise ArtifactsMissing(
+                    f"The encoder checkpoint models/soundbridge_encoder.pt could not be loaded ({exc}). "
+                    "Run `python scripts/setup_all.py` to retrain it."
+                ) from exc
+            cfg = self.model.config
+            if cfg["in_dim"] != len(self.pipe.input_names) or cfg["emb_dim"] != self.embeddings.shape[1]:
+                raise ArtifactsMissing(
+                    "The encoder checkpoint does not match the feature pipeline / embeddings "
+                    f"(model expects {cfg['in_dim']} inputs and {cfg['emb_dim']}-d embeddings; pipeline gives "
+                    f"{len(self.pipe.input_names)} inputs, embeddings are {self.embeddings.shape[1]}-d). "
+                    "Run `python scripts/setup_all.py` to rebuild."
+                )
         self._search_key = (
             self.tracks["track_name"].str.lower() + " — " + self.tracks["artists"].str.lower().str.replace(";", ", ")
         ).to_numpy()

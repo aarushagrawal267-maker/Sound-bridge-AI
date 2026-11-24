@@ -75,7 +75,11 @@ def load_existing_encoder(models_dir: Path, out: Path, genres: list, input_names
     if not ckpt.exists():
         print("no encoder checkpoint found: training from scratch")
         return None
-    model, extra = SoundBridgeEncoder.load(ckpt)
+    try:
+        model, extra = SoundBridgeEncoder.load(ckpt)
+    except Exception as exc:  # truncated / incompatible checkpoint
+        print(f"encoder checkpoint could not be loaded ({exc}): training from scratch")
+        return None
     if list(extra.get("genres", [])) != list(genres) or list(extra.get("input_names", [])) != list(input_names):
         print("encoder checkpoint does not match the current data: training from scratch")
         return None

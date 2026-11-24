@@ -14,6 +14,7 @@ judged these lists. Each run is saved with its configuration and a Markdown repo
 from __future__ import annotations
 
 import json
+import re
 import time
 from dataclasses import asdict
 from pathlib import Path
@@ -132,7 +133,9 @@ def run_experiment(
 
 def save_experiment(result: dict) -> Path:
     stamp = result["timestamp"].replace(" ", "_").replace(":", "")
-    d = path("experiments_dir") / f"{stamp}_{result['name']}"
+    # the name is free text from the Experiment Lab: keep it to one safe path component
+    safe = re.sub(r"[^A-Za-z0-9_-]+", "_", str(result["name"])).strip("_") or "experiment"
+    d = path("experiments_dir") / f"{stamp}_{safe}"
     d.mkdir(parents=True, exist_ok=True)
     (d / "config.json").write_text(json.dumps({**result["config"], "name": result["name"],
                                                "timestamp": result["timestamp"], "seconds": result["seconds"],

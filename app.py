@@ -64,6 +64,12 @@ except ArtifactsMissing as exc:
         unsafe_allow_html=True,
     )
     st.caption(str(exc))
+    if st.session_state.get("_auto_build_ran"):
+        # a build already finished in this session but the artifacts are still unusable: do not loop
+        st.error("Automatic setup finished but the model artifacts are still not usable. Run the command "
+                 "below in a terminal and check its output.")
+        st.code("python scripts/setup_all.py", language="bash")
+        st.stop()
     import time
 
     lock = ROOT / "data" / "processed" / ".building"
@@ -89,6 +95,7 @@ except ArtifactsMissing as exc:
     finally:
         lock.unlink(missing_ok=True)
     if ok:
+        st.session_state._auto_build_ran = True
         status.update(label="SoundBridge is ready", state="complete")
         get_engine.clear()
         st.rerun()

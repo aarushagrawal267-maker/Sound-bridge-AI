@@ -11,7 +11,7 @@ and visibility for lesser-known artists, and it measures the answer instead of a
 * A neural network trained from scratch on CPU (about 2.5 minutes), evaluated on artists it never saw.
 * Seven ranking strategies, compared in a reproducible Experiment Lab.
 * A 14-page Streamlit app with a custom dark interface.
-* 113 automated tests (pytest).
+* 121 automated tests (pytest).
 
 > SoundBridge AI is independent and not affiliated with Spotify. It does not reproduce any proprietary
 > recommendation algorithm. Popularity is used only as an **exposure proxy**, never as a measure of quality.
@@ -157,7 +157,7 @@ src/
 scripts/                    setup_all, build_artifacts, train_model, run_experiments,
                             make_figures, seed_robustness
 .github/workflows/tests.yml continuous integration: build + full test suite on every push
-tests/                      113 pytest tests
+tests/                      121 pytest tests
 models/                     trained encoder weights and fitted feature pipeline (committed);
                             embeddings and other arrays are rebuilt by setup
 outputs/                    evaluation reports, experiment runs, figures
@@ -347,7 +347,7 @@ python -m pytest
 GitHub Actions (`.github/workflows/tests.yml`) runs the same suite on every push: it installs the CPU-only
 dependencies, runs `python scripts/setup_all.py --reuse-weights` and then `python -m pytest`.
 
-The 113 tests cover loading, validation, preprocessing, feature pipelines (including missing features), Musical
+The 121 tests cover loading, validation, preprocessing, feature pipelines (including missing features), Musical
 DNA, every strategy, similarity maths, MMR and the hybrid scoring formula, artist caps, de-duplication, Hidden
 Gems rules, listening-mode constraints, explanations (exact decomposition and attribution completeness), metrics,
 feedback storage and updates, model training, persistence and reproduction of stored embeddings, and every app
