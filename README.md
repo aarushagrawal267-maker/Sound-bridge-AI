@@ -18,7 +18,7 @@ and visibility for lesser-known artists, and it measures the answer instead of a
 
 ### Quick start (macOS / Linux)
 ```bash
-git clone https://github.com/aarushagrawal267-maker/sound-bridge-ai.git && cd sound-bridge-ai
+git clone https://github.com/aarushagrawal267-maker/Sound-bridge-AI.git && cd Sound-bridge-AI
 python3 -m venv .venv && source .venv/bin/activate
 pip install torch --index-url https://download.pytorch.org/whl/cpu && pip install -r requirements.txt
 python scripts/setup_all.py      # download + clean the dataset, train the encoder (about 3-6 min on CPU)
@@ -282,8 +282,8 @@ Every reason is computed:
 You need Python 3.11 or newer (from python.org; tick "Add python.exe to PATH") and Git. Run these in **Command Prompt**:
 
 ```bat
-git clone https://github.com/aarushagrawal267-maker/sound-bridge-ai.git
-cd sound-bridge-ai
+git clone https://github.com/aarushagrawal267-maker/Sound-bridge-AI.git
+cd Sound-bridge-AI
 py -3 -m venv .venv
 .venv\Scripts\activate
 python -m pip install --upgrade pip
