@@ -24,6 +24,9 @@ pip install torch --index-url https://download.pytorch.org/whl/cpu && pip instal
 python scripts/setup_all.py      # download + clean the dataset, train the encoder (about 3-6 min on CPU)
 streamlit run app.py             # open http://localhost:8501
 ```
+In a hurry? `python scripts/setup_all.py --reuse-weights` skips retraining and loads the committed encoder weights
+(training is deterministic, so the weights and every reported metric are the same). The app uses this fast path
+automatically when it builds itself on first launch.
 Windows instructions are in [section 14](#14-installation-windows).
 
 ### Screenshots
@@ -153,6 +156,7 @@ src/
   ui.py                     design system: CSS, generative artwork, cards, state
 scripts/                    setup_all, build_artifacts, train_model, run_experiments,
                             make_figures, seed_robustness
+.github/workflows/tests.yml continuous integration: build + full test suite on every push
 tests/                      113 pytest tests
 models/                     trained encoder weights and fitted feature pipeline (committed);
                             embeddings and other arrays are rebuilt by setup
@@ -292,8 +296,9 @@ pip install -r requirements.txt
 python scripts\setup_all.py
 ```
 `setup_all.py` downloads the dataset (about 20 MB, checksum-verified), cleans it and trains the encoder
-(about 3–6 minutes on a laptop CPU). You can skip this step: if the data and model are missing, the app runs the
-same build automatically on first launch and shows its progress.
+(about 3–6 minutes on a laptop CPU). Add `--reuse-weights` to load the committed encoder instead of retraining it.
+You can also skip this step: if the data and model are missing, the app runs the build automatically on first
+launch (with `--reuse-weights`) and shows its progress.
 
 The CPU-only PyTorch wheel above is optional but much smaller. Plain `pip install -r requirements.txt` also works.
 
@@ -339,6 +344,9 @@ Tip: append `?demo=indie` (or `electronic`, `acoustic`, `hiphop`) to the URL to 
 ```bat
 python -m pytest
 ```
+GitHub Actions (`.github/workflows/tests.yml`) runs the same suite on every push: it installs the CPU-only
+dependencies, runs `python scripts/setup_all.py --reuse-weights` and then `python -m pytest`.
+
 The 113 tests cover loading, validation, preprocessing, feature pipelines (including missing features), Musical
 DNA, every strategy, similarity maths, MMR and the hybrid scoring formula, artist caps, de-duplication, Hidden
 Gems rules, listening-mode constraints, explanations (exact decomposition and attribution completeness), metrics,

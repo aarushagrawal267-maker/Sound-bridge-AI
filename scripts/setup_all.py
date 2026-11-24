@@ -1,10 +1,11 @@
 """One command to make SoundBridge AI runnable from a fresh clone.
 
-Usage:  python scripts/setup_all.py [--experiments] [--figures]
+Usage:  python scripts/setup_all.py [--reuse-weights] [--experiments] [--figures]
 
 1. download the public dataset (checksum-verified)
 2. validate, clean and feature-engineer it            (scripts/build_artifacts.py)
 3. train + evaluate the SoundBridge Encoder on CPU     (scripts/train_model.py, ~2-5 min)
+   --reuse-weights loads the committed, deterministically trained encoder instead (about 1 min in total)
 4. optionally re-run the offline experiments           (scripts/run_experiments.py, ~3-6 min)
 5. optionally regenerate report figures                (scripts/make_figures.py)
 """
@@ -28,11 +29,13 @@ def run(script: str, *args: str) -> None:
 
 def main() -> None:
     ap = argparse.ArgumentParser()
+    ap.add_argument("--reuse-weights", action="store_true",
+                    help="use the committed encoder weights instead of retraining (much faster)")
     ap.add_argument("--experiments", action="store_true", help="also re-run the offline experiments")
     ap.add_argument("--figures", action="store_true", help="also regenerate the report figures")
     args = ap.parse_args()
     run("build_artifacts.py")
-    run("train_model.py")
+    run("train_model.py", *(["--reuse-weights"] if args.reuse_weights else []))
     if args.experiments:
         run("run_experiments.py")
     if args.figures:

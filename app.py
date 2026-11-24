@@ -58,7 +58,8 @@ except ArtifactsMissing as exc:
     st.markdown(
         '<div class="sb-hero"><div><span class="eyebrow">● First-time setup</span><h1>Let\'s build your<br>'
         '<span class="sb-grad">SoundBridge.</span></h1><p class="lead">SoundBridge needs to download the public Spotify '
-        "tracks dataset, clean it and train its neural network on your CPU. This runs automatically and takes about 3–6 minutes, once.</p>"
+        "tracks dataset, clean it, load its trained neural network and index the catalogue. This runs automatically, "
+        "once, and takes a few minutes. (Run <code>python scripts/setup_all.py</code> to retrain the network from scratch.)</p>"
         "</div></div>",
         unsafe_allow_html=True,
     )
@@ -76,9 +77,9 @@ except ArtifactsMissing as exc:
     lock.parent.mkdir(parents=True, exist_ok=True)
     lock.touch()
     try:
-        with st.status("Building SoundBridge AI (first start only, about 3–6 minutes)…", expanded=True) as status:
+        with st.status("Building SoundBridge AI (first start only, a few minutes)…", expanded=True) as status:
             line_box = st.empty()
-            proc = subprocess.Popen([sys.executable, str(ROOT / "scripts" / "setup_all.py")], cwd=ROOT,
+            proc = subprocess.Popen([sys.executable, str(ROOT / "scripts" / "setup_all.py"), "--reuse-weights"], cwd=ROOT,
                                     stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
             for line in proc.stdout:
                 if line.strip():

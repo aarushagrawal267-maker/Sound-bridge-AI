@@ -59,8 +59,10 @@ This is the "robot" account the app uses to write into your sheet.
        `private_key` exactly as they are in the file.
 4. Click **Deploy**.
 
-The first start installs packages, downloads the dataset and trains the model. This takes about **5–10 minutes**,
-and the app shows its progress. Later starts reuse the build while the app stays awake.
+The first start installs packages, downloads the dataset, cleans it and rebuilds the catalogue index from the
+committed, already-trained encoder weights (`setup_all.py --reuse-weights`, so the network is not retrained on the
+shared cloud CPU). This takes a few minutes, and the app shows its progress. Later starts reuse the build while the
+app stays awake.
 
 ## Step 4: Check that it works (3 min)
 1. Open the app, load an example taste on Home, go to **Music Discovery**, switch on *Store my feedback* and like
@@ -74,7 +76,7 @@ incomplete or the sheet is not shared with the service-account e-mail.
 
 ## Step 5: Run the pilot
 * **Before each session**, open the app yourself so it is awake. Community Cloud apps sleep after a period without
-  visitors, and waking one can trigger the 5–10 minute first-start build again.
+  visitors, and waking one can trigger the few-minute first-start build again.
 * **Give participants this link:** `https://<your-app-url>.streamlit.app/Pilot_Study`
 * **Each participant:**
   1. agrees to the consent statement

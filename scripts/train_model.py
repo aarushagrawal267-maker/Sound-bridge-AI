@@ -1,6 +1,11 @@
 """Step 2: train and evaluate the SoundBridge Encoder, then build all model artifacts.
 
-Usage:  python scripts/train_model.py [--epochs N]
+Usage:  python scripts/train_model.py [--epochs N] [--reuse-weights]
+
+--reuse-weights   skip training and load the committed models/soundbridge_encoder.pt (training is
+                  deterministic, so this gives the same weights in seconds instead of minutes). Every
+                  evaluation and catalogue artifact is still recomputed from those weights. Falls back to
+                  training if the checkpoint is missing or does not match the current data.
 
 Outputs (models/):        soundbridge_encoder.pt, embeddings.npy, genre_probs.npy,
                           pred_popularity.npy, raw_features.npy, clusters.npy,
@@ -62,9 +67,32 @@ def permutation_importance_encoder(model, X, gm, pop, idx, names, seed=0, repeat
     return pd.DataFrame(rows).sort_values("genre_top5_drop", ascending=False)
 
 
+def load_existing_encoder(models_dir: Path, out: Path, genres: list, input_names: list, mcfg: dict):
+    """Return (model, history, training_info) from the saved checkpoint, or None if it cannot be reused."""
+    from src.model import SoundBridgeEncoder
+
+    ckpt = models_dir / "soundbridge_encoder.pt"
+    if not ckpt.exists():
+        print("no encoder checkpoint found: training from scratch")
+        return None
+    model, extra = SoundBridgeEncoder.load(ckpt)
+    if list(extra.get("genres", [])) != list(genres) or list(extra.get("input_names", [])) != list(input_names):
+        print("encoder checkpoint does not match the current data: training from scratch")
+        return None
+    hist_path = out / "reports" / "training_history.csv"
+    hist = pd.read_csv(hist_path) if hist_path.exists() else pd.DataFrame()
+    eval_path = out / "reports" / "model_evaluation.json"
+    previous = json.loads(eval_path.read_text()).get("training") if eval_path.exists() else None
+    training = dict(previous or {"config": mcfg})
+    training["reused_checkpoint"] = str(extra.get("trained", "unknown date"))
+    return model, hist, training
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--epochs", type=int, default=None)
+    ap.add_argument("--reuse-weights", action="store_true",
+                    help="load the existing encoder checkpoint instead of retraining it")
     args = ap.parse_args()
     cfg = load_config()
     mcfg = cfg["model"]
@@ -87,16 +115,22 @@ def main() -> None:
     train_idx, test_idx = artist_split(codes, mcfg["test_artist_fraction"], seed)
     print(f"train tracks={len(train_idx)}  held-out-artist tracks={len(test_idx)}")
 
-    res = train_encoder(
-        X, gm, pop, codes, train_idx,
-        hidden=mcfg["hidden_dim"], emb_dim=mcfg["embedding_dim"], dropout=mcfg["dropout"],
-        epochs=args.epochs or mcfg["epochs"], batch_size=mcfg["batch_size"], lr=mcfg["learning_rate"],
-        weight_decay=mcfg["weight_decay"], temperature=mcfg["temperature"],
-        loss_weights=mcfg["loss_weights"], seed=seed,
-    )
-    model = res.model
-    hist = pd.DataFrame(res.history)
-    hist.to_csv(out / "reports" / "training_history.csv", index=False)
+    reused = load_existing_encoder(models_dir, out, genres, pipe.input_names, mcfg) if args.reuse_weights else None
+    if reused is not None:
+        model, hist, previous_training = reused
+        print("reusing the existing encoder checkpoint (no retraining); pass no flag to retrain from scratch")
+    else:
+        res = train_encoder(
+            X, gm, pop, codes, train_idx,
+            hidden=mcfg["hidden_dim"], emb_dim=mcfg["embedding_dim"], dropout=mcfg["dropout"],
+            epochs=args.epochs or mcfg["epochs"], batch_size=mcfg["batch_size"], lr=mcfg["learning_rate"],
+            weight_decay=mcfg["weight_decay"], temperature=mcfg["temperature"],
+            loss_weights=mcfg["loss_weights"], seed=seed,
+        )
+        model = res.model
+        hist = pd.DataFrame(res.history)
+        hist.to_csv(out / "reports" / "training_history.csv", index=False)
+        previous_training = None
 
     # ---------------- evaluation on held-out artists ----------------
     E_all, P_all, pop_pred = encode(model, X)
@@ -168,16 +202,17 @@ def main() -> None:
     np.save(models_dir / "coords_2d.npy", pca.transform(E_all).astype(np.float32))
     np.save(models_dir / "test_idx.npy", test_idx)
     joblib.dump(km, models_dir / "kmeans.joblib")
-    model.save(
-        models_dir / "soundbridge_encoder.pt",
-        extra={"genres": genres, "input_names": pipe.input_names, "trained": time.strftime("%Y-%m-%d %H:%M")},
-    )
+    if reused is None:
+        model.save(
+            models_dir / "soundbridge_encoder.pt",
+            extra={"genres": genres, "input_names": pipe.input_names, "trained": time.strftime("%Y-%m-%d %H:%M")},
+        )
 
     evaluation = {
         "dataset": {"tracks": len(tracks), "train_tracks": int(len(train_idx)), "test_tracks": int(len(test_idx)),
                     "test_artists": int(len(np.unique(codes[test_idx]))), "genres": len(genres)},
-        "training": {"epochs": len(res.history), "seconds": round(res.seconds, 1),
-                     "final_loss": res.history[-1], "config": mcfg},
+        "training": previous_training if reused is not None else {
+            "epochs": len(res.history), "seconds": round(res.seconds, 1), "final_loss": res.history[-1], "config": mcfg},
         "retrieval_held_out_artists": retrieval,
         "encoder_heads": heads,
         "baselines": {
@@ -191,6 +226,8 @@ def main() -> None:
     print(json.dumps(evaluation, indent=2))
 
     # ---------------- figures ----------------
+    if hist.empty:
+        return
     fig, ax = plt.subplots(1, 3, figsize=(13, 3.6))
     for a, col, c in zip(ax, ["contrastive", "genre", "popularity"], [PURPLE, BLUE, PINK]):
         a.plot(hist["epoch"], hist[col], color=c, lw=2)
