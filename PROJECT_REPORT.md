@@ -4,7 +4,8 @@
 opportunities for lesser-known artists, and explain its choices?
 
 Every number in this report was produced by the code in this repository, on the dataset described below.
-Re-running `python scripts/setup_all.py --experiments --figures` reproduces them; training and experiments are
+Re-running `python scripts/setup_all.py --experiments --figures` reproduces them (the confidence intervals come from
+`python scripts/evaluation_confidence.py`, which `--experiments` also runs); training and experiments are
 seeded and were verified to reproduce exactly on a second run. No user-study results are reported, because no
 participants have been run yet (section 9).
 
@@ -79,7 +80,9 @@ A PyTorch multi-task MLP (15 → 256 → 256 → 32, LayerNorm, GELU, dropout 0.
 | Genre | Cosine-prototype classifier, 114 labels, soft multi-label targets | 1.0 |
 | Popularity | Smooth-L1 regression on popularity / 100, excluding popularity 0 | 0.5 |
 
-* **Split:** artist-level. 15% of artists (2,645 artists, 12,110 tracks) are held out entirely.
+* **Split:** artist-level. 15% of primary artists (2,645 artists, 12,110 tracks) are held out: none of their
+  tracks is used for training. 473 of them (18%) appear as a secondary credit on some training track. Secondary
+  credits are never used as labels, and section 3.1 reports the scores for both groups.
 * **Training:** 67,758 tracks, AdamW (lr 2e-3, weight decay 1e-4), one-cycle schedule, 40 epochs, batch size
   1,024, input noise σ = 0.08. Takes 143 s on a 4-core CPU. All three losses decrease steadily
   (`outputs/figures/training_curves.png`).
@@ -93,12 +96,32 @@ Retrieval inside the held-out set, using 5,000 query tracks whose artist has at 
 | Same-artist hit@10 | **0.434** | 0.282 | 0.307 |
 | Genre agreement@10 (random: 0.016) | **0.227** | 0.137 | 0.147 |
 
+**Uncertainty.** The 5,000 queries come from 1,304 artists, and queries by the same artist are not independent, so
+the intervals below resample whole artists (1,000 bootstrap draws, `scripts/evaluation_confidence.py`,
+`outputs/reports/evaluation_confidence.json`):
+
+| 95% interval | Encoder | Raw features | Encoder − raw | Encoder / raw |
+|---|---|---|---|---|
+| Same-artist precision@10 | 0.087–0.124 | 0.042–0.068 | +0.043 to +0.059 | 1.77–2.17× |
+| Same-artist hit@10 | 0.401–0.472 | 0.250–0.316 | | |
+| Genre agreement@10 | 0.208–0.245 | 0.124–0.151 | +0.080 to +0.099 | |
+
+**Held-out artists credited on training tracks.** Same-artist precision@10 is 0.090 (encoder) vs 0.043 (raw), a
+2.09× ratio, for queries whose artist never appears on a training track, and 0.131 vs 0.074 (1.78×) for the 1,778
+queries whose artist does. The untrained raw space also scores higher on the second group, so the difference
+reflects those artists rather than leakage, and the encoder's advantage does not depend on them.
+
 | Prediction head | Encoder | Baseline on identical inputs |
 |---|---|---|
 | Genre top-1 accuracy | **0.256** | Logistic regression 0.198 |
 | Genre top-5 accuracy | **0.547** | Logistic regression 0.467 |
 | Popularity R² | 0.142 | XGBoost (400 trees) **0.169** |
 | Popularity MAE | **12.85** | XGBoost 12.93; predicting the mean 14.78 |
+
+Genre accuracy counts a hit when the predicted label is any of the track's labels (17% of held-out tracks carry more
+than one). The logistic regression is trained on each track's primary genre, using a 40,000-track subsample of
+the training artists. Popularity metrics use held-out tracks with popularity above 0. The encoder's "predicting the mean" MAE uses
+the held-out mean (14.78); the XGBoost row's uses the training mean (14.78).
 
 **Robustness.** Retraining with different random seeds also changes which artists are held out:
 
@@ -173,8 +196,12 @@ Relevance metrics are **proxies**: no listener judged these lists.
 | Artist coverage (union of 2,000 recs) | 0.090 | 0.090 | 0.068 | 0.079 | 0.082 | 0.093 | **0.095** |
 | Exposure Gini (lower = more even) | 0.180 | 0.180 | 0.330 | 0.257 | 0.230 | 0.159 | **0.142** |
 
-95% half-widths across seed sets are about ±0.01 for the similarity proxies, ±0.03–0.04 for the genre-consistency
-precision and lesser-known share, and ±1.1–1.8 points for mean popularity (`ci95.csv` in each experiment folder).
+95% half-widths across seed sets (`ci95.csv` in each experiment folder) are ±0.009–0.016 for encoder relevance,
+±0.010–0.025 for raw-feature relevance, up to ±0.04 for genre-consistency precision and lesser-known share, and
+±1.1–1.8 points for mean popularity. Every strategy is scored on the same 200 seed sets, so differences between
+strategies are tested with paired intervals, which are narrower (`outputs/reports/evaluation_confidence.json`). For
+example, the hybrid's encoder relevance is 0.028 below the plain encoder's (paired 95% interval 0.025–0.032), and
+its lesser-known share is 0.098 higher (0.070–0.126).
 
 ### 5.2 Novelty sweep (RQ6)
 Hybrid with relevance 0.7 and diversity 0.15, varying the novelty weight:
@@ -219,10 +246,12 @@ to 0.414, and repeated-artist % falls from 3.8% to 0.8%. Encoder relevance chang
 * **RQ5: repetition.** The hybrid's repetition penalty and artist cap cut repeated-artist share from 4.8% (plain
   encoder) to 0.5%, with no duplicate tracks in any strategy. MMR controls within-list similarity smoothly (5.3).
 * **RQ6: lesser-known artists without losing relevance.** Raising the novelty weight from 0 to 0.3 more than
-  doubles the lesser-known artist share (18% → 40%). Encoder relevance changes by −0.002 and raw-feature relevance
-  by +0.001, both well inside the ±0.01 intervals. Beyond 0.45, costs appear: relevance −0.014, genre consistency
-  −0.25, and higher exposure concentration as lists pile onto the lowest-exposure artists. **Moderate discovery
-  weighting is essentially free on these proxies; aggressive weighting is not.**
+  doubles the lesser-known artist share (18% → 40%). Paired over the same seed sets, encoder relevance changes by
+  −0.002 (95% interval −0.004 to 0.000) and raw-feature relevance by +0.001 (−0.005 to +0.008), so the similarity
+  cost is at most a few thousandths. Genre consistency is not free: it falls by 0.096 (0.074–0.118), from 0.850 to
+  0.754. At 0.6 the costs grow: relevance −0.015, genre consistency −0.25, and higher exposure concentration as
+  lists pile onto the lowest-exposure artists. **Moderate discovery weighting is nearly free on the similarity
+  proxies but costs about 0.1 in genre consistency; aggressive weighting costs more on every proxy.**
 * **RQ7: strategy comparison.** No strategy wins every metric. Within ±0.03 relevance of the best encoder strategy,
   the hybrid gives the best artist diversity (0.995), the lowest exposure concentration (Gini 0.142), the highest
   artist coverage, 82% genre consistency and 1.5× the plain encoder's lesser-known share. The popularity-aware
@@ -281,6 +310,13 @@ should be made.
   detail and culture are absent.
 * **Retrieval precision is modest in absolute terms** (0.105 same-artist precision@10), so improvements over the
   baseline should not be overstated.
+* **Simple baselines.** The genre baseline is a logistic regression and the popularity baseline an untuned XGBoost;
+  stronger tuned models were not compared.
+* **Transductive normalisation.** The quantile and z-score transforms are fitted on the whole catalogue, held-out
+  artists included (no labels are used). Refitting them on training artists only changes the held-out encoder
+  inputs by 0.004 on average and raw-feature precision@10 from 0.0539 to 0.0542 (`evaluation_confidence.json`).
+* **Single split for the deployed model.** Intervals above capture query sampling, not split or training
+  randomness; the three-seed robustness check covers that only roughly.
 * **Spotify's audio-features endpoint is unavailable to new applications**, so the catalogue cannot be extended with
   matching features from the official API.
 
@@ -298,6 +334,7 @@ should be made.
 * `outputs/reports/model_evaluation.json`
 * `outputs/reports/feature_importance.csv`
 * `outputs/reports/seed_robustness.json`
+* `outputs/reports/evaluation_confidence.json`
 * `outputs/reports/experiment_results.md`
 * `outputs/experiments/*/` (config, summary, per-seed-set metrics, recommendations, CIs and report)
 * `outputs/figures/*.png`

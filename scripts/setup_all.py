@@ -7,6 +7,7 @@ Usage:  python scripts/setup_all.py [--reuse-weights] [--experiments] [--figures
 3. train + evaluate the SoundBridge Encoder on CPU     (scripts/train_model.py, ~2-5 min)
    --reuse-weights loads the committed, deterministically trained encoder instead (about 1 min in total)
 4. optionally re-run the offline experiments           (scripts/run_experiments.py, ~3-6 min)
+   and recompute their confidence intervals            (scripts/evaluation_confidence.py, seconds)
 5. optionally regenerate report figures                (scripts/make_figures.py)
 """
 from __future__ import annotations
@@ -38,6 +39,7 @@ def main() -> None:
     run("train_model.py", *(["--reuse-weights"] if args.reuse_weights else []))
     if args.experiments:
         run("run_experiments.py")
+        run("evaluation_confidence.py")
     if args.figures:
         run("make_figures.py")
     print("\nSoundBridge AI is ready. Launch it with:  streamlit run app.py")

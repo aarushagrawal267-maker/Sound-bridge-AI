@@ -11,7 +11,7 @@ and visibility for lesser-known artists, and it measures the answer instead of a
 * A neural network trained from scratch on CPU (about 2.5 minutes), evaluated on artists it never saw.
 * Seven ranking strategies, compared in a reproducible Experiment Lab.
 * A 14-page Streamlit app with a custom dark interface.
-* 121 automated tests (pytest).
+* 124 automated tests (pytest).
 
 > SoundBridge AI is independent and not affiliated with Spotify. It does not reproduce any proprietary
 > recommendation algorithm. Popularity is used only as an **exposure proxy**, never as a measure of quality.
@@ -155,9 +155,9 @@ src/
   visualization.py          Plotly theme and charts (colour-blind-checked palette)
   ui.py                     design system: CSS, generative artwork, cards, state
 scripts/                    setup_all, build_artifacts, train_model, run_experiments,
-                            make_figures, seed_robustness
+                            evaluation_confidence, make_figures, seed_robustness
 .github/workflows/tests.yml continuous integration: build + full test suite on every push
-tests/                      121 pytest tests
+tests/                      124 pytest tests
 models/                     trained encoder weights and fitted feature pipeline (committed);
                             embeddings and other arrays are rebuilt by setup
 outputs/                    evaluation reports, experiment runs, figures
@@ -170,8 +170,8 @@ outputs/                    evaluation reports, experiment runs, figures
 ## 7. The SoundBridge Encoder (the AI model)
 A multi-task neural network, trained from scratch, that powers every feature of the app.
 
-* **Input (15 values):** the nine audio features (quantile-normalised), log duration, mode, key (sine and cosine)
-  and time signature. Artist, genre and popularity are **never inputs**, so the embedding describes sound only.
+* **Input (15 values):** the nine audio features (quantile-normalised), log duration, mode, key (sine and cosine),
+  time signature and the explicit flag. Artist, genre and popularity are **never inputs**, so the embedding describes sound only.
 * **Network:** MLP 15 → 256 → 256 → 32 with LayerNorm, GELU and dropout, producing a unit-length 32-d embedding.
 * **Three training objectives**, all using real labels:
   1. **Contrastive (InfoNCE):** two tracks by the same artist should embed close together. Other tracks in the
@@ -180,7 +180,10 @@ A multi-task neural network, trained from scratch, that powers every feature of 
   3. **Popularity:** regression on popularity. Tracks with popularity 0 are excluded as unreliable.
 * **Training:** AdamW with a one-cycle learning-rate schedule, 40 epochs and batch size 1,024. Takes 143 s on a
   4-core CPU and is deterministic.
-* **Evaluation on 2,645 held-out artists (12,110 tracks never seen in training):**
+* **Evaluation on 2,645 held-out artists (12,110 tracks never seen in training).** No track whose primary artist is
+  held out is used for training. 473 of these artists (18%) do appear as a secondary credit on some training track;
+  secondary credits are never training labels, and the encoder's advantage is larger, not smaller, for artists who
+  never appear on a training track (2.09× vs 1.78×, `outputs/reports/evaluation_confidence.json`).
 
 | Metric (k = 10, 5,000 queries) | SoundBridge Encoder | Raw audio features | Untrained inputs |
 |---|---|---|---|
@@ -193,9 +196,12 @@ A multi-task neural network, trained from scratch, that powers every feature of 
 | Genre top-1 / top-5 accuracy | **0.256 / 0.547** | Logistic regression 0.198 / 0.467 |
 | Popularity R² / MAE | 0.142 / **12.85** | XGBoost **0.169** / 12.93 (predicting the mean: MAE 14.78) |
 
-The encoder roughly doubles same-artist precision over raw-feature similarity on unseen artists. Popularity is
-barely predictable from sound for either model, which supports treating popularity as exposure rather than as a
-property of the music.
+The encoder roughly doubles same-artist precision over raw-feature similarity on unseen artists. Resampling whole
+artists (1,000 bootstrap draws, `scripts/evaluation_confidence.py`) gives 95% intervals of 0.087–0.124 for the
+encoder and 0.042–0.068 for raw features; the ratio is 1.77–2.17×. Genre accuracy counts a hit when the predicted
+label is any of the track's labels (17% of held-out tracks have more than one). Popularity is barely predictable
+from sound for either model, which supports treating popularity as exposure rather than as a property of the
+music.
 
 ## 8. Musical DNA
 * **Interpretable layer:** for the seed songs, the mean, spread and range of each audio feature; catalogue
@@ -310,6 +316,8 @@ Then open http://localhost:8501. On macOS or Linux, use `source .venv/bin/activa
 
 Optional extras:
 * `python scripts\run_experiments.py`: re-run all experiments.
+* `python scripts\evaluation_confidence.py`: bootstrap intervals for the held-out results and paired intervals for
+  the experiment comparisons (`outputs/reports/evaluation_confidence.json`, a few seconds).
 * `python scripts\make_figures.py`: regenerate the report figures.
 * `python scripts\seed_robustness.py`: retrain with other seeds.
 * **Spotify artwork:** set `SPOTIFY_CLIENT_ID` and `SPOTIFY_CLIENT_SECRET` (Client Credentials app from
@@ -347,7 +355,7 @@ python -m pytest
 GitHub Actions (`.github/workflows/tests.yml`) runs the same suite on every push: it installs the CPU-only
 dependencies, runs `python scripts/setup_all.py --reuse-weights` and then `python -m pytest`.
 
-The 121 tests cover loading, validation, preprocessing, feature pipelines (including missing features), Musical
+The 124 tests cover loading, validation, preprocessing, feature pipelines (including missing features), Musical
 DNA, every strategy, similarity maths, MMR and the hybrid scoring formula, artist caps, de-duplication, Hidden
 Gems rules, listening-mode constraints, explanations (exact decomposition and attribution completeness), metrics,
 feedback storage and updates, model training, persistence and reproduction of stored embeddings, and every app
@@ -365,6 +373,11 @@ page rendered with and without seeds.
   not been run.
 * **Small effects:** the encoder clearly beats raw features, but absolute retrieval precision is modest (0.105).
   Audio features alone cannot identify an artist reliably.
+* **Simple baselines:** the genre baseline is a logistic regression and the popularity baseline an untuned XGBoost.
+  Stronger tuned models were not compared.
+* **Transductive normalisation:** the quantile and z-score transforms are fitted on the whole catalogue, held-out
+  artists included (no labels are used). Refitting them on training artists only changes the encoder inputs of
+  held-out tracks by 0.004 on average and raw-feature precision@10 from 0.0539 to 0.0542.
 * **Spotify's audio-features API is closed to new apps**, so new tracks cannot be added with features from Spotify.
 
 ## 18. Future improvements

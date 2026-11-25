@@ -1,8 +1,10 @@
 """Training and evaluation of the SoundBridge Encoder (CPU only).
 
-Evaluation is performed on *held-out artists*: no track of a test artist is seen during
-training, so retrieval scores measure generalisation to unseen music rather than
-memorisation.
+Evaluation is performed on *held-out artists*: no track whose primary artist is held out is
+seen during training, so retrieval scores measure generalisation to unseen music rather than
+memorisation. (Some held-out artists are credited as a secondary artist on a training track;
+secondary credits are never used as training labels. scripts/evaluation_confidence.py reports
+the scores for both groups.)
 """
 from __future__ import annotations
 
@@ -153,6 +155,38 @@ def train_encoder(
     return TrainResult(model=model, history=history, train_idx=train_idx, seconds=time.time() - t0)
 
 
+def retrieval_per_query(
+    space: np.ndarray,
+    idx: np.ndarray,
+    artist_codes: np.ndarray,
+    genre_multi_hot: np.ndarray,
+    k: int = 10,
+    max_queries: int = 5000,
+    seed: int = 0,
+) -> dict[str, np.ndarray]:
+    """Per-query nearest-neighbour outcomes inside a subset (see ``retrieval_metrics``).
+
+    Returns the query positions within ``idx`` (``query``), boolean ``(n_queries, k)`` arrays
+    ``same_artist`` and ``genre_overlap``, and ``chance_genre_overlap`` for k random neighbours.
+    """
+    sub = space[idx]
+    codes = artist_codes[idx]
+    gm = genre_multi_hot[idx]
+    counts = np.bincount(codes)
+    eligible = np.where(counts[codes] > 1)[0]
+    rng = np.random.default_rng(seed)
+    q = rng.choice(eligible, size=min(max_queries, len(eligible)), replace=False)
+    nn = NearestNeighbors(n_neighbors=k + 1, metric="cosine", algorithm="brute").fit(sub)
+    _, nbrs = nn.kneighbors(sub[q])
+    nbrs = nbrs[:, 1:]  # drop the query itself
+    same_artist = codes[nbrs] == codes[q][:, None]
+    genre_overlap = (gm[nbrs] * gm[q][:, None, :]).sum(-1) > 0
+    # chance level for genre agreement: random neighbours from the subset
+    rand = rng.integers(0, len(idx), size=(len(q), k))
+    chance = (gm[rand] * gm[q][:, None, :]).sum(-1) > 0
+    return {"query": q, "same_artist": same_artist, "genre_overlap": genre_overlap, "chance_genre_overlap": chance}
+
+
 def retrieval_metrics(
     space: np.ndarray,
     idx: np.ndarray,
@@ -169,28 +203,45 @@ def retrieval_metrics(
     * genre_agreement@k  - share of neighbours sharing at least one genre label
     Queries are restricted to tracks whose artist has another track in the subset.
     """
-    sub = space[idx]
-    codes = artist_codes[idx]
-    gm = genre_multi_hot[idx]
-    counts = np.bincount(codes)
-    eligible = np.where(counts[codes] > 1)[0]
-    rng = np.random.default_rng(seed)
-    q = rng.choice(eligible, size=min(max_queries, len(eligible)), replace=False)
-    nn = NearestNeighbors(n_neighbors=k + 1, metric="cosine", algorithm="brute").fit(sub)
-    _, nbrs = nn.kneighbors(sub[q])
-    nbrs = nbrs[:, 1:]  # drop the query itself
-    same_artist = codes[nbrs] == codes[q][:, None]
-    genre_overlap = (gm[nbrs] * gm[q][:, None, :]).sum(-1) > 0
-    # chance level for genre agreement: random neighbours from the subset
-    rand = rng.integers(0, len(idx), size=(len(q), k))
-    chance_genre = ((gm[rand] * gm[q][:, None, :]).sum(-1) > 0).mean()
+    r = retrieval_per_query(space, idx, artist_codes, genre_multi_hot, k, max_queries, seed)
+    same_artist = r["same_artist"]
     return {
         f"artist_precision@{k}": float(same_artist.mean()),
         f"artist_hit@{k}": float(same_artist.any(1).mean()),
-        f"genre_agreement@{k}": float(genre_overlap.mean()),
-        f"genre_agreement_chance@{k}": float(chance_genre),
-        "n_queries": int(len(q)),
+        f"genre_agreement@{k}": float(r["genre_overlap"].mean()),
+        f"genre_agreement_chance@{k}": float(r["chance_genre_overlap"].mean()),
+        "n_queries": int(len(r["query"])),
     }
+
+
+def cluster_bootstrap_ci(
+    values: dict[str, np.ndarray],
+    clusters: np.ndarray,
+    statistic=None,
+    n_boot: int = 1000,
+    seed: int = 0,
+    level: float = 0.95,
+) -> dict[str, list[float]]:
+    """Percentile bootstrap CI that resamples whole clusters (e.g. artists) with replacement.
+
+    ``values`` maps a name to a per-observation array aligned with ``clusters``. By default the
+    statistic is the mean of each array; pass ``statistic(means: dict) -> dict`` to derive
+    further quantities (differences, ratios) from the resampled means.
+    """
+    clusters = np.asarray(clusters)
+    uniq, inv = np.unique(clusters, return_inverse=True)
+    rng = np.random.default_rng(seed)
+    sums = {n: np.bincount(inv, weights=np.asarray(v, dtype=float), minlength=len(uniq)) for n, v in values.items()}
+    sizes = np.bincount(inv, minlength=len(uniq)).astype(float)
+    draws: dict[str, list[float]] = {}
+    for _ in range(n_boot):
+        w = np.bincount(rng.integers(0, len(uniq), len(uniq)), minlength=len(uniq))
+        means = {n: float(w @ s / (w @ sizes)) for n, s in sums.items()}
+        stats = statistic(means) if statistic else means
+        for n, v in stats.items():
+            draws.setdefault(n, []).append(v)
+    a = (1 - level) / 2 * 100
+    return {n: [float(x) for x in np.percentile(d, [a, 100 - a])] for n, d in draws.items()}
 
 
 def evaluate_heads(model: SoundBridgeEncoder, X, genre_multi_hot, popularity, idx) -> dict[str, float]:

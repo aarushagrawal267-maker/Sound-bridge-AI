@@ -4,7 +4,14 @@ import pytest
 import torch
 
 from src.model import SoundBridgeEncoder, encode, similarity_attribution
-from src.trainer import _PositiveSampler, artist_split, retrieval_metrics, train_encoder
+from src.trainer import (
+    _PositiveSampler,
+    artist_split,
+    cluster_bootstrap_ci,
+    retrieval_metrics,
+    retrieval_per_query,
+    train_encoder,
+)
 
 
 def test_forward_shapes_and_norm():
@@ -76,3 +83,53 @@ def test_trained_artifacts_consistent(engine):
     assert np.allclose(emb, engine.embeddings[:200], atol=1e-4)
     assert np.allclose(probs.sum(1), 1, atol=1e-3)
     assert len(engine.model_meta["genres"]) == engine.genre_probs.shape[1]
+
+
+def test_retrieval_per_query_matches_aggregate():
+    rng = np.random.default_rng(3)
+    n, d = 600, 6
+    artists = rng.integers(0, 80, n)
+    X = (rng.normal(size=(80, d))[artists] + 0.5 * rng.normal(size=(n, d))).astype(np.float32)
+    genres = np.eye(5, dtype=np.float32)[artists % 5]
+    idx = np.arange(100, n)
+    r = retrieval_per_query(X, idx, artists, genres, k=5, max_queries=300, seed=4)
+    m = retrieval_metrics(X, idx, artists, genres, k=5, max_queries=300, seed=4)
+    assert r["same_artist"].shape == (300, 5)
+    assert m["artist_precision@5"] == pytest.approx(r["same_artist"].mean())
+    assert m["artist_hit@5"] == pytest.approx(r["same_artist"].any(1).mean())
+    assert m["genre_agreement@5"] == pytest.approx(r["genre_overlap"].mean())
+    assert m["genre_agreement_chance@5"] == pytest.approx(r["chance_genre_overlap"].mean())
+
+
+def test_cluster_bootstrap_ci_covers_mean_and_respects_clusters():
+    rng = np.random.default_rng(0)
+    clusters = np.repeat(np.arange(50), 20)
+    # values identical within a cluster: the effective sample size is 50, not 1,000
+    x = np.repeat(rng.normal(size=50), 20)
+    y = x + 1.0
+    ci = cluster_bootstrap_ci({"x": x, "y": y}, clusters, statistic=lambda m: {**m, "d": m["y"] - m["x"]},
+                              n_boot=500, seed=1)
+    lo, hi = ci["x"]
+    assert lo < x.mean() < hi
+    assert ci["d"] == pytest.approx([1.0, 1.0])
+    naive_half = 1.96 * x.std(ddof=1) / np.sqrt(len(x))
+    assert (hi - lo) / 2 > 2 * naive_half  # clustering widens the interval
+
+
+def test_committed_confidence_report_matches_evaluation():
+    """outputs/reports/evaluation_confidence.json was computed from the committed evaluation."""
+    import json
+
+    from src.config import path
+
+    reports = path("outputs_dir") / "reports"
+    ev = json.loads((reports / "model_evaluation.json").read_text())["retrieval_held_out_artists"]
+    conf = json.loads((reports / "evaluation_confidence.json").read_text())["held_out_retrieval"]
+    names = {"encoder": "SoundBridge Encoder (learned, 32-d)", "raw": "Raw audio features (z-score, 9-d)"}
+    for key, name in names.items():
+        for metric, field in (("precision", "artist_precision@10"), ("hit", "artist_hit@10"),
+                              ("genre", "genre_agreement@10")):
+            row = conf["metrics"][f"{key}_{metric}"]
+            assert row["value"] == pytest.approx(ev[name][field], abs=1e-4)
+            assert row["ci95"][0] <= row["value"] <= row["ci95"][1]
+    assert conf["n_queries"] == ev[names["encoder"]]["n_queries"]
