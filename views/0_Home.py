@@ -13,12 +13,12 @@ enc = ret.get("SoundBridge Encoder (learned, 32-d)", {})
 raw = ret.get("Raw audio features (z-score, 9-d)", {})
 
 st.markdown(
-    f"""<div class="sb-hero">
+    f"""<div class="sb-hero"><div>
   <span class="eyebrow">● AI music discovery · {len(engine):,} real tracks</span>
   <h1>Discover beyond<br><span class="sb-grad">your algorithm.</span></h1>
   <p class="lead">SoundBridge AI learns the sound of the songs you love with its own neural network, then bridges you
   to music you haven't heard — including lesser-known artists — and tells you exactly why each song was chosen.</p>
-  {ui.hero_eq()}
+  </div>{ui.hero_eq()}
 </div>""",
     unsafe_allow_html=True,
 )

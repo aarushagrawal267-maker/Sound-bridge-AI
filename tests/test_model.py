@@ -126,10 +126,13 @@ def test_committed_confidence_report_matches_evaluation():
     ev = json.loads((reports / "model_evaluation.json").read_text())["retrieval_held_out_artists"]
     conf = json.loads((reports / "evaluation_confidence.json").read_text())["held_out_retrieval"]
     names = {"encoder": "SoundBridge Encoder (learned, 32-d)", "raw": "Raw audio features (z-score, 9-d)"}
+    # CI rebuilds model_evaluation.json; on some CPUs a near-tie in the neighbour search flips a single query
+    # (hit@10 moves by 1/n_queries = 0.0002), so allow up to two flipped queries but nothing more.
+    tol = 2.5 / ev[names["encoder"]]["n_queries"]
     for key, name in names.items():
         for metric, field in (("precision", "artist_precision@10"), ("hit", "artist_hit@10"),
                               ("genre", "genre_agreement@10")):
             row = conf["metrics"][f"{key}_{metric}"]
-            assert row["value"] == pytest.approx(ev[name][field], abs=1e-4)
+            assert row["value"] == pytest.approx(ev[name][field], abs=tol)
             assert row["ci95"][0] <= row["value"] <= row["ci95"][1]
     assert conf["n_queries"] == ev[names["encoder"]]["n_queries"]

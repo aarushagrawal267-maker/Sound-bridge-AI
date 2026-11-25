@@ -10,7 +10,7 @@ and visibility for lesser-known artists, and it measures the answer instead of a
 * Real data: 114,000 rows from the public Spotify Tracks Dataset, cleaned to 79,868 unique songs.
 * A neural network trained from scratch on CPU (about 2.5 minutes), evaluated on artists it never saw.
 * Seven ranking strategies, compared in a reproducible Experiment Lab.
-* A 14-page Streamlit app with a custom dark interface.
+* A 15-page Streamlit app with a custom dark interface.
 * 124 automated tests (pytest).
 
 > SoundBridge AI is independent and not affiliated with Spotify. It does not reproduce any proprietary
@@ -128,7 +128,7 @@ Streamlit · Plotly · Matplotlib · Seaborn · Pillow · Joblib · Pytest. Ever
 ## 6. Architecture
 ```
 app.py                      Streamlit router (st.navigation) and first-run setup
-views/                      14 pages (see section 15)
+views/                      15 pages (see section 15)
 src/
   config.py                 paths, feature definitions, config.yaml loader
   data_loader.py            schema detection and mapping, checksum-verified download
