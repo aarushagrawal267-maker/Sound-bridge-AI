@@ -1,6 +1,8 @@
 # environments
 .venv/
 venv/
+env/
+node_modules/
 __pycache__/
 *.pyc
 .pytest_cache/
@@ -26,5 +28,25 @@ data/feedback/*
 # misc
 .DS_Store
 Thumbs.db
+
+# credentials: real values go in Streamlit secrets or environment variables, never in git
+# (the committed .streamlit/secrets.toml.example holds placeholders only)
 .streamlit/secrets.toml
 .env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+credentials.json
+client_secret*.json
+*service-account*.json
+*service_account*.json
+
+# local data dumps (feedback and pilot responses can contain personal data)
+*.sqlite
+*.sqlite3
+*.db
+*.dump
+*.sql.gz

@@ -5,12 +5,18 @@ on:
   pull_request:
   workflow_dispatch:
 
+# The job only reads the repository, so the automatic GITHUB_TOKEN gets read access only.
+permissions:
+  contents: read
+
 jobs:
   pytest:
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false  # setup downloads third-party data; keep the token out of .git/config
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
