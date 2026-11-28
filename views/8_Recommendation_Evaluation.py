@@ -67,7 +67,7 @@ with tab_feedback:
     rated = data[data["feedback"].isin(POSITIVE | NEGATIVE)] if len(data) else data
     if len(rated) == 0:
         ui.empty_state("No relevance labels yet", "Like or dislike recommendations on Music Discovery or Hidden Gems. "
-                       "Precision and NDCG are only reported once real labels exist.", "📊")
+                       "Precision and NDCG are only reported once real labels exist.", "bar_chart")
     else:
         rated = rated.assign(rel=rated["feedback"].isin(POSITIVE).astype(int))
         rows = []

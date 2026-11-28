@@ -48,7 +48,7 @@ with c2:
 ui.section("Stored feedback", f"consented events · stored in {store.backend}")
 if summ["n_events"] == 0:
     ui.empty_state("No stored feedback yet", "Turn on consent and rate some recommendations. This dashboard will then "
-                   "analyse the real events — it never shows invented data.", "🗂️")
+                   "analyse the real events — it never shows invented data.", "folder_open")
 else:
     ui.tiles([(f"{summ['n_events']}", "Events", ""), (f"{summ['n_sessions']}", "Sessions", "anonymous session ids"),
               (f"{summ.get('like_rate', float('nan')):.0%}" if "like_rate" in summ else "—", "Like rate", "likes ÷ (likes + dislikes)")])

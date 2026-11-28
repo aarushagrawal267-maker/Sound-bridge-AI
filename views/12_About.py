@@ -36,7 +36,7 @@ with c2:
         ("How do strategies compare?", "Experiment Lab · strategy comparison"),
         ("Can users understand why a song was recommended?", "Why This Song? · Pilot Study"),
     ]
-    st.markdown('<ul class="sb-reasons">' + "".join(f"<li><b>{q}</b><br><span style='font-size:.8rem'>→ {w}</span></li>" for q, w in rq)
+    st.markdown('<ul class="sb-reasons">' + "".join(f"<li><b>{q}</b><br><span style='font-size:13px'>→ {w}</span></li>" for q, w in rq)
                 + "</ul>", unsafe_allow_html=True)
 
 st.markdown("""

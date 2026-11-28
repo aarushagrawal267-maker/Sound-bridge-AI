@@ -16,7 +16,7 @@ ui.page_header("Explainable recommendations", "Why This Song?",
 
 seeds = st.session_state.seeds
 if not seeds:
-    ui.empty_state("No profile to explain against", "Add seed songs first — explanations compare a track with your Musical DNA.", "🔍")
+    ui.empty_state("No profile to explain against", "Add seed songs first — explanations compare a track with your Musical DNA.", "search")
     st.stop()
 
 # choose a track: last recommendations, or search

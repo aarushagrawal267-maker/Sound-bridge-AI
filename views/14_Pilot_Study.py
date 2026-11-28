@@ -47,7 +47,7 @@ with tab_run:
         st.stop()
     if len(seeds) < 2:
         ui.empty_state("Step 1 — choose at least two songs you enjoy",
-                       "Add seeds on Music Discovery (search for songs you genuinely like), then return here.", "🎵")
+                       "Add seeds on Music Discovery (search for songs you genuinely like), then return here.", "music_note")
         if st.button("Go to Music Discovery", type="primary"):
             st.switch_page("views/1_Music_Discovery.py")
         st.stop()
@@ -92,7 +92,7 @@ with tab_run:
         store.append({"type": "pilot_response", "participant": st.session_state.study_id, "timestamp": time.time(),
                       "n_seeds": len(seeds), "order": order, "lists": answers, "preferred": preferred,
                       "explanation_usefulness": expl, "comment": comment[:500]})
-        st.success(f"Thank you! List A was **{CONFIGS[order[0]]}** and List B was **{CONFIGS[order[1]]}**.")
+        st.success(f"Thanks for taking part. List A was **{CONFIGS[order[0]]}** and List B was **{CONFIGS[order[1]]}**.")
         del st.session_state["study_order"]
 
 with tab_report:
@@ -103,7 +103,7 @@ with tab_report:
     if n == 0:
         ui.empty_state("No pilot responses recorded yet",
                        "The study has not been run. Results will appear here as real participants submit — nothing is "
-                       "pre-filled or simulated.", "🧪")
+                       "pre-filled or simulated.", "science")
     else:
         rows = []
         for _, r in resp.iterrows():

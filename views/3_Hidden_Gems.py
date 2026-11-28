@@ -13,7 +13,7 @@ ui.page_header("Hidden Gems", "Lesser-known artists, matched to you",
 
 seeds = st.session_state.seeds
 if not seeds:
-    ui.empty_state("Pick some songs first", "Hidden Gems are matched to your Musical DNA.", "💎")
+    ui.empty_state("Pick some songs first", "Hidden Gems are matched to your Musical DNA.", "diamond")
     st.stop()
 
 ui.note("Low popularity does not mean high quality, and it does not tell us whether an artist is independent or "

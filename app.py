@@ -11,7 +11,7 @@ ICON = ROOT / "assets" / "icon.png"
 
 st.set_page_config(
     page_title="SoundBridge AI",
-    page_icon=str(ICON) if ICON.exists() else "🎧",
+    page_icon=str(ICON) if ICON.exists() else ":material/headphones:",
     layout="wide",
     initial_sidebar_state="auto",
 )
@@ -56,8 +56,8 @@ except ArtifactsMissing as exc:
     import sys
 
     st.markdown(
-        '<div class="sb-hero"><div><span class="eyebrow">● First-time setup</span><h1>Let\'s build your<br>'
-        '<span class="sb-grad">SoundBridge.</span></h1><p class="lead">SoundBridge needs to download the public Spotify '
+        '<div class="sb-hero solo"><div><span class="meta">First-time setup</span><h1>Building the catalogue and the encoder'
+        '</h1><p class="lead">SoundBridge needs to download the public Spotify '
         "tracks dataset, clean it and train its neural network on your CPU. This runs automatically and takes about 3–6 minutes, once.</p>"
         "</div></div>",
         unsafe_allow_html=True,
