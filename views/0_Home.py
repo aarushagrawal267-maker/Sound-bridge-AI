@@ -13,13 +13,12 @@ enc = ret.get("SoundBridge Encoder (learned, 32-d)", {})
 raw = ret.get("Raw audio features (z-score, 9-d)", {})
 
 st.markdown(
-    f"""<div class="sb-hero">
-  <span class="eyebrow">● AI music discovery · {len(engine):,} real tracks</span>
-  <h1>Discover beyond<br><span class="sb-grad">your algorithm.</span></h1>
+    f"""<div class="sb-hero"><div>
+  <span class="meta">Music discovery · {len(engine):,} real tracks</span>
+  <h1>Discover beyond your algorithm</h1>
   <p class="lead">SoundBridge AI learns the sound of the songs you love with its own neural network, then bridges you
   to music you haven't heard — including lesser-known artists — and tells you exactly why each song was chosen.</p>
-  {ui.hero_eq()}
-</div>""",
+</div>{ui.hero_crate(engine)}</div>""",
     unsafe_allow_html=True,
 )
 
@@ -52,7 +51,7 @@ if q:
 cols = st.columns(4)
 for col, (key, label) in zip(cols, [("indie", "Indie & alt-rock"), ("electronic", "Electronic"),
                                      ("acoustic", "Acoustic & folk"), ("hiphop", "Hip-hop")]):
-    if col.button(label, key=f"demo_{key}", icon=":material/auto_awesome:", width="stretch"):
+    if col.button(label, key=f"demo_{key}", icon=":material/queue_music:", width="stretch"):
         found = ui.demo_seeds(engine, key)
         for i in found:
             ui.add_seed(i)

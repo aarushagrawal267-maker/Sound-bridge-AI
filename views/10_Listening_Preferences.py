@@ -15,7 +15,7 @@ ui.page_header("What should I listen to today?", "Listening Preferences",
                "Pick a listening preference. SoundBridge translates it into audio-feature targets, then uses the "
                "encoder to find tracks that share that sound — personalised to your Musical DNA if you have one.")
 ui.note("These are <b>approximate descriptors</b> from audio analysis, not mood classifications. “Relaxed” means low "
-        "estimated energy and softer dynamics; whether a song relaxes <i>you</i> is up to you.")
+        "estimated energy and softer dynamics; whether a song relaxes you is up to you.")
 
 keys = list(MODES)
 mode = st.segmented_control("Preference", keys, format_func=lambda k: MODES[k].title, default="energetic", key="mode_pick") or "energetic"

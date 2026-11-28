@@ -1,6 +1,7 @@
-"""Plotly charts in the SoundBridge visual language (dark surface, violet/blue accents).
+"""Plotly charts in the SoundBridge visual language (graphite surface; series colours below are CVD-checked).
 
-Colour roles (validated for CVD separation on the #12111c surface):
+Colour roles (CVD separation was validated on the original #12111c surface; charts now sit on the
+#1b1b1c graphite surface, which is close in luminance — re-check if the surface changes further):
 * PAIR       - "your profile" violet vs "this track" aqua (2-series comparisons)
 * CATEGORICAL- fixed order, never cycled; series beyond six fold into small multiples
 * SEQ        - single-hue violet ramp for magnitude
@@ -16,12 +17,12 @@ import plotly.io as pio
 
 from .config import SHORT_LABELS
 
-SURFACE = "#12111c"
+SURFACE = "#1b1b1c"
 PAPER = "rgba(0,0,0,0)"
-TEXT = "#ECEAF6"
-TEXT_2 = "#B9B5CF"
-MUTED = "#7D7896"
-GRID = "rgba(255,255,255,0.06)"
+TEXT = "#ecebe8"
+TEXT_2 = "#b4b2ac"
+MUTED = "#878580"
+GRID = "rgba(236,236,234,0.06)"
 PROFILE = "#9085e9"   # violet
 TRACK = "#199e70"     # aqua
 ACCENT = "#9085e9"
@@ -29,14 +30,14 @@ MUTED_MARK = "#4a4663"
 CATEGORICAL = ["#3987e5", "#d95926", "#199e70", "#c98500", "#d55181", "#9085e9"]
 SEQ = [[0.0, "#211d3d"], [0.35, "#4b3f9a"], [0.7, "#8a7cf0"], [1.0, "#e3ddff"]]
 DIVERGING = [[0.0, "#3987e5"], [0.5, "#3a3848"], [1.0, "#d95926"]]
-FONT = "Inter, 'Space Grotesk', system-ui, sans-serif"
+FONT = "'IBM Plex Sans', system-ui, sans-serif"
 
 
 def _register() -> None:
     t = go.layout.Template()
     t.layout = go.Layout(
         font=dict(family=FONT, color=TEXT_2, size=12),
-        title=dict(font=dict(family="'Space Grotesk', Inter, sans-serif", size=16, color=TEXT), x=0.02, xanchor="left"),
+        title=dict(font=dict(family=FONT, size=15, color=TEXT), x=0.02, xanchor="left"),
         paper_bgcolor=PAPER,
         plot_bgcolor=PAPER,
         colorway=CATEGORICAL,
@@ -45,7 +46,7 @@ def _register() -> None:
                    title=dict(font=dict(color=TEXT_2))),
         yaxis=dict(automargin=True, gridcolor=GRID, zeroline=False, linecolor="rgba(255,255,255,0.12)", tickcolor=MUTED,
                    title=dict(font=dict(color=TEXT_2))),
-        hoverlabel=dict(bgcolor="#1d1a2e", bordercolor="rgba(144,133,233,0.5)", font=dict(color=TEXT, family=FONT)),
+        hoverlabel=dict(bgcolor="#232324", bordercolor="rgba(236,236,234,0.14)", font=dict(color=TEXT, family=FONT)),
         legend=dict(bgcolor="rgba(0,0,0,0)", font=dict(color=TEXT_2), orientation="h", y=1.08, x=0),
         bargap=0.25,
     )

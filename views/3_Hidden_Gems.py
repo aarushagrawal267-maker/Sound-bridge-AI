@@ -8,12 +8,12 @@ from src.visualization import MUTED_MARK, PROFILE, TRACK, _finish
 
 engine = ui.get_engine()
 ui.page_header("Hidden Gems", "Lesser-known artists, matched to you",
-               "Tracks that sound like your Musical DNA, by artists with low exposure <i>in this dataset</i>. "
+               "Tracks that sound like your Musical DNA, by artists with low exposure in this dataset. "
                "Every gem must first clear a strict relevance floor — obscurity alone never qualifies a track.")
 
 seeds = st.session_state.seeds
 if not seeds:
-    ui.empty_state("Pick some songs first", "Hidden Gems are matched to your Musical DNA.", "💎")
+    ui.empty_state("Pick some songs first", "Hidden Gems are matched to your Musical DNA.", "diamond")
     st.stop()
 
 ui.note("Low popularity does not mean high quality, and it does not tell us whether an artist is independent or "

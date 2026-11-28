@@ -19,23 +19,23 @@ ui.section("The SoundBridge Encoder", "a multi-task neural network trained from 
 cfg = engine.model.config
 st.markdown(f"""
 <div class="sb-panel">
-<div style="display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;justify-content:center;font-size:.86rem">
-  <div class="sb-tile" style="min-width:170px"><div class="l">Input</div><div class="v" style="font-size:1.1rem">{cfg['in_dim']} audio features</div>
+<div class="sb-flow">
+  <div class="sb-tile"><div class="l">Input</div><div class="v" style="font-size:18px">{cfg['in_dim']} audio features</div>
   <div class="s">quantile-normalised audio + duration, key, mode, metre, explicit</div></div>
-  <div style="color:#8b5cf6;font-size:1.4rem">→</div>
-  <div class="sb-tile" style="min-width:170px"><div class="l">Backbone</div><div class="v" style="font-size:1.1rem">MLP {cfg['hidden']}·{cfg['hidden']}</div>
+  <div class="arrow" aria-hidden="true">→</div>
+  <div class="sb-tile"><div class="l">Backbone</div><div class="v" style="font-size:18px">MLP {cfg['hidden']}·{cfg['hidden']}</div>
   <div class="s">LayerNorm · GELU · dropout {cfg['dropout']}</div></div>
-  <div style="color:#8b5cf6;font-size:1.4rem">→</div>
-  <div class="sb-tile" style="min-width:170px"><div class="l">Sound embedding</div><div class="v" style="font-size:1.1rem">{cfg['emb_dim']}-d, unit length</div>
+  <div class="arrow" aria-hidden="true">→</div>
+  <div class="sb-tile"><div class="l">Sound embedding</div><div class="v" style="font-size:18px">{cfg['emb_dim']}-d, unit length</div>
   <div class="s">used for retrieval, profiles, diversity</div></div>
-  <div style="color:#8b5cf6;font-size:1.4rem">→</div>
-  <div style="display:flex;flex-direction:column;gap:.4rem">
-    <span class="sb-chip v">Contrastive head · same-artist pairs (InfoNCE)</span>
-    <span class="sb-chip b">Genre head · {cfg['n_genres']} labels (cosine prototypes)</span>
-    <span class="sb-chip a">Popularity head · exposure regression</span>
+  <div class="arrow" aria-hidden="true">→</div>
+  <div class="heads">
+    <span class="sb-chip">Contrastive head · same-artist pairs (InfoNCE)</span>
+    <span class="sb-chip">Genre head · {cfg['n_genres']} labels (cosine prototypes)</span>
+    <span class="sb-chip">Popularity head · exposure regression</span>
   </div>
 </div></div>""", unsafe_allow_html=True)
-st.caption("Artist, genre and popularity are training *targets* only — never inputs — so the embedding describes how a "
+st.caption("Artist, genre and popularity are training targets only — never inputs — so the embedding describes how a "
            "track sounds. Training uses an artist-level split: 15% of artists are held out entirely for evaluation.")
 
 if ev:

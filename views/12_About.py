@@ -36,7 +36,7 @@ with c2:
         ("How do strategies compare?", "Experiment Lab · strategy comparison"),
         ("Can users understand why a song was recommended?", "Why This Song? · Pilot Study"),
     ]
-    st.markdown('<ul class="sb-reasons">' + "".join(f"<li><b>{q}</b><br><span style='font-size:.8rem'>→ {w}</span></li>" for q, w in rq)
+    st.markdown('<ul class="sb-reasons">' + "".join(f"<li><b>{q}</b><br><span style='font-size:13px'>→ {w}</span></li>" for q, w in rq)
                 + "</ul>", unsafe_allow_html=True)
 
 st.markdown("""
@@ -48,7 +48,7 @@ st.markdown("""
   player (only when switched on), plus album artwork if you provide your own API credentials.
 
 ### Ethics & limitations
-* **Popularity is an exposure proxy**, never a quality score. "Lesser-known" always means *in this dataset*.
+* **Popularity is an exposure proxy**, never a quality score. "Lesser-known" always means in this dataset.
 * **Audio features are estimates.** Valence and energy describe signal properties, not anyone's feelings.
 * **This dataset is a sample.** It cannot measure the full Spotify catalogue or industry-wide exposure.
 * **Relevance without users is a proxy.** Only the Feedback Dashboard and Pilot Study measure real relevance, and

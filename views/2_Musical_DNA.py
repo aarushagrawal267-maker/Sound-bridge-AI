@@ -15,7 +15,7 @@ ui.page_header("Musical DNA", "Your Musical DNA",
                "SoundBridge Encoder hears your taste.")
 seeds = st.session_state.seeds
 if not seeds:
-    ui.empty_state("Your DNA is empty", "Add seed songs on Music Discovery (or try a ready-made taste on Home).", "🧬")
+    ui.empty_state("Your DNA is empty", "Add seed songs on Music Discovery (or try a ready-made taste on Home).", "genetics")
     if st.button("Go to Music Discovery", type="primary", icon=":material/travel_explore:"):
         st.switch_page("views/1_Music_Discovery.py")
     st.stop()
@@ -28,7 +28,7 @@ labels = {i: engine.label(i) for i in seeds}
 active = st.multiselect("Songs included in this profile — remove or re-add to watch your DNA change",
                         options=seeds, default=seeds, format_func=lambda i: labels[i])
 if not active:
-    st.warning("Select at least one song.")
+    st.warning("Select at least one song")
     st.stop()
 
 summ = feature_summary(engine.tracks, active)

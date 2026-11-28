@@ -71,7 +71,7 @@ with tab_q:
         st.dataframe(pd.DataFrame({"column": list(oor), "rows": list(oor.values())}), hide_index=True, width="stretch")
         st.markdown("**Schema detected by the flexible loader**")
         sch = val.get("schema", {})
-        st.markdown(" ".join(f'<span class="sb-chip {"a" if v else ""}">{k}{"" if v else " ✕"}</span>' for k, v in sch.items()),
+        st.markdown(" ".join(('<span class="sb-chip">' + k + '</span>' if v else '<span class="sb-chip" style="opacity:.5">' + k + ' ✕</span>') for k, v in sch.items()),
                     unsafe_allow_html=True)
         st.caption("✕ = field not present in this dataset (e.g. artist IDs, album IDs, release dates, image URLs). "
                    "Absent fields are left absent — never fabricated.")

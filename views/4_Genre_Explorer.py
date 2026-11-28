@@ -113,7 +113,7 @@ if seeds:
     opp = gm.opportunities(prof.genre_vector, 8)
     cols = st.columns(4)
     for i, r in enumerate(opp.itertuples()):
-        cols[i % 4].markdown(f'<div class="sb-tile"><div class="v" style="font-size:1.2rem">{r.genre}</div>'
+        cols[i % 4].markdown(f'<div class="sb-tile"><div class="v" style="font-size:18px">{r.genre}</div>'
                              f'<div class="l">relatedness {r.relatedness:.2f}</div></div>', unsafe_allow_html=True)
     st.caption("Use the Genre exploration slider on Music Discovery, or the Genre exploration mode on Listening Preferences.")
 

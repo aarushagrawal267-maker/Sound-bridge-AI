@@ -104,7 +104,7 @@ with tab_run:
         if use_custom:
             config["hybrid@custom"] = custom
         if not config:
-            st.warning("Select at least one strategy.")
+            st.warning("Select at least one strategy")
         else:
             bar = st.progress(0.0, text="Running…")
             res = run_experiment(engine, config, n_sets=n_sets, k=k, seed=int(seed), name=name.strip().replace(" ", "_") or "experiment",

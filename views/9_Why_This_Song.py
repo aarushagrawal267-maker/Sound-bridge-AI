@@ -16,7 +16,7 @@ ui.page_header("Explainable recommendations", "Why This Song?",
 
 seeds = st.session_state.seeds
 if not seeds:
-    ui.empty_state("No profile to explain against", "Add seed songs first — explanations compare a track with your Musical DNA.", "🔍")
+    ui.empty_state("No profile to explain against", "Add seed songs first — explanations compare a track with your Musical DNA.", "search")
     st.stop()
 
 # choose a track: last recommendations, or search
@@ -115,7 +115,7 @@ with st.form("expl_rating", border=True):
         if st.session_state.consent:
             StudyStore().append({"type": "explanation_rating", "session_id": st.session_state.session_id, "track_idx": idx,
                                  "usefulness": rating, "understood": understood})
-            st.success("Thanks — rating stored locally.")
+            st.success("Thanks — rating stored locally")
         else:
             st.info("Rating not stored: switch on feedback consent on Music Discovery or the Feedback Dashboard first.")
 ui.footer()
