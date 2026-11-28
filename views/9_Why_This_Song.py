@@ -115,7 +115,7 @@ with st.form("expl_rating", border=True):
         if st.session_state.consent:
             StudyStore().append({"type": "explanation_rating", "session_id": st.session_state.session_id, "track_idx": idx,
                                  "usefulness": rating, "understood": understood})
-            st.success("Thanks — rating stored locally.")
+            st.success("Thanks — rating stored locally")
         else:
             st.info("Rating not stored: switch on feedback consent on Music Discovery or the Feedback Dashboard first.")
 ui.footer()

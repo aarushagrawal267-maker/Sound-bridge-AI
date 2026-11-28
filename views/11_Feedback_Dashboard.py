@@ -82,7 +82,7 @@ else:
     if c6.button("Delete all stored feedback", icon=":material/delete:", width="stretch"):
         store.clear()
         StudyStore().clear()
-        st.success("Stored feedback deleted.")
+        st.success("Stored feedback deleted")
         st.rerun()
 st.caption("SoundBridge does not learn from a population of users: it adapts to the person using it, from the labels shown here.")
 ui.footer()

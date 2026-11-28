@@ -28,7 +28,7 @@ labels = {i: engine.label(i) for i in seeds}
 active = st.multiselect("Songs included in this profile — remove or re-add to watch your DNA change",
                         options=seeds, default=seeds, format_func=lambda i: labels[i])
 if not active:
-    st.warning("Select at least one song.")
+    st.warning("Select at least one song")
     st.stop()
 
 summ = feature_summary(engine.tracks, active)

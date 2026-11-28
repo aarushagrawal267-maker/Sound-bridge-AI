@@ -57,6 +57,8 @@ code { font-family: var(--mono); }
 .stButton > button[kind="tertiary"], .stLinkButton > a[kind="tertiary"] { border: 0; background: transparent; color: var(--text-2); padding: 0 8px; }
 .stButton > button[kind="tertiary"]:hover { color: var(--text); background: var(--surface-2); }
 [data-baseweb="input"], [data-baseweb="select"] > div, [data-baseweb="textarea"] { background: var(--surface) !important; border-radius: 8px !important; border-color: var(--line-2) !important; }
+[data-baseweb="tag"], [data-testid="stMultiSelectTagsContainer"] [data-tag] { background: var(--surface-3) !important; color: var(--text) !important; border: 1px solid var(--line-2); border-radius: 4px !important; }
+[data-baseweb="tag"] *, [data-testid="stMultiSelectTagsContainer"] [data-tag] * { color: var(--text) !important; }
 [data-testid="stTabs"] [data-baseweb="tab-list"] { gap: 4px; border-bottom: 1px solid var(--line); }
 [data-testid="stTabs"] [data-baseweb="tab"] { border-radius: 8px 8px 0 0; padding: 8px 16px; color: var(--text-2); }
 [data-testid="stTabs"] [aria-selected="true"] { color: var(--text); }
@@ -132,7 +134,8 @@ code { font-family: var(--mono); }
 .sb-reason b { color: var(--text); font-weight: 500; }
 
 /* signature: seven-bar audio fingerprint, mono readout */
-.sb-fp { display:flex; flex-direction:column; align-items:flex-end; gap: 8px; font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.sb-fp { display:flex; flex-direction:column; align-items:flex-end; gap: 8px; min-width: 0; font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.sb-fp .glyph { display:flex; flex-direction:column; gap: 4px; flex: none; }
 .sb-fp .bars { display:grid; grid-template-columns: repeat(7, 8px); column-gap: 4px; align-items:end; height: 28px; }
 .sb-fp .bars i { display:block; width: 8px; background: var(--text-2); border-radius: 1px; }
 .sb-fp .keys { display:grid; grid-template-columns: repeat(7, 8px); column-gap: 4px; font-size: 10px; color: var(--muted); text-align:center; line-height: 1; }
@@ -140,7 +143,8 @@ code { font-family: var(--mono); }
 .sb-fp .nums b { color: var(--accent); font-weight: 500; }
 .sb-fp .nums span { color: var(--text-2); }
 @container (max-width: 480px){ .sb-track{ grid-template-columns: 64px minmax(0,1fr); } .sb-art{ width:64px; height:64px; }
-  .sb-fp{ grid-column: 1 / -1; flex-direction: row; align-items:center; justify-content: space-between; } }
+  .sb-fp{ grid-column: 1 / -1; flex-direction: row; flex-wrap: wrap; align-items:center; justify-content: space-between; column-gap: 12px; row-gap: 4px; }
+  .sb-fp .nums{ white-space: normal; } }
 
 /* seed row in sidebar */
 .sb-seed { display:flex; gap: 12px; align-items:center; padding: 8px; border-radius: 8px; border:1px solid var(--line); background: var(--surface); margin-bottom: 4px; }
@@ -149,7 +153,7 @@ code { font-family: var(--mono); }
 .sb-seed .t { font-size: 13px; color: var(--text); line-height: 1.3; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width: 170px; }
 .sb-seed .a { font-size: 12px; color: var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width: 170px; }
 .sb-brand { display:flex; align-items:center; gap: 12px; padding: 4px 0 16px; }
-.sb-brand .name { font-weight: 600; font-size: 17px; color: var(--text); }
+.sb-brand .name { font-weight: 500; font-size: 17px; color: var(--text); }
 .sb-brand .tag { font-size: 12px; color: var(--muted); }
 
 .sb-note { border-left: 2px solid var(--accent); padding: 8px 16px; background: var(--surface); border-radius: 0 8px 8px 0; color: var(--text-2); font-size: 14px; line-height: 1.5; margin: 8px 0 16px; }
@@ -161,6 +165,10 @@ code { font-family: var(--mono); }
 .sb-empty .sb-ico { font-size: 28px; color: var(--muted); }
 .sb-empty h4 { margin: 12px 0 4px; padding: 0; font-size: 16px; }
 .sb-empty p { margin: 0; font-size: 14px; }
+.sb-flow { display:grid; grid-template-columns: minmax(0,1fr) 20px minmax(0,1fr) 20px minmax(0,1fr) 20px minmax(0,1.2fr); gap: 12px; align-items:center; }
+.sb-flow .arrow { color: var(--muted); font-size: 20px; text-align:center; }
+.sb-flow .heads { display:flex; flex-direction:column; align-items:flex-start; gap: 4px; }
+@media (max-width: 1100px){ .sb-flow{ grid-template-columns: minmax(0,1fr); } .sb-flow .arrow{ transform: rotate(90deg); } }
 .sb-step { display:flex; gap: 12px; align-items:flex-start; }
 .sb-step .n { flex:none; width: 28px; height: 28px; border-radius: 6px; display:grid; place-items:center; font-family: var(--mono); font-size: 13px; color: var(--text-2);
   background: var(--surface-2); border: 1px solid var(--line); }
@@ -255,8 +263,8 @@ def artwork_svg(row: pd.Series | dict, size: int = 96, uid: str | None = None) -
         f'<svg viewBox="0 0 100 100" width="{size}" height="{size}" xmlns="http://www.w3.org/2000/svg" role="img">'
         f'<title>Generated from audio features — not official artwork</title>'
         f'<defs><linearGradient id="g{gid}" x1="0" y1="0" x2="1" y2="1">'
-        f'<stop offset="0" stop-color="hsl({h1:.0f},70%,{l1:.0f}%)"/><stop offset="1" stop-color="hsl({h2:.0f},75%,{l2:.0f}%)"/></linearGradient>'
-        f'<radialGradient id="r{gid}"><stop offset="0" stop-color="hsl({h2:.0f},90%,75%)" stop-opacity=".75"/>'
+        f'<stop offset="0" stop-color="hsl({h1:.0f},46%,{l1:.0f}%)"/><stop offset="1" stop-color="hsl({h2:.0f},52%,{l2:.0f}%)"/></linearGradient>'
+        f'<radialGradient id="r{gid}"><stop offset="0" stop-color="hsl({h2:.0f},60%,72%)" stop-opacity=".45"/>'
         f'<stop offset="1" stop-color="hsl({h2:.0f},90%,60%)" stop-opacity="0"/></radialGradient></defs>'
         f'<rect width="100" height="100" fill="url(#g{gid})"/>'
         f'<circle cx="{cx:.0f}" cy="{cy:.0f}" r="{26 + 18 * e:.0f}" fill="url(#r{gid})"/>'
@@ -319,7 +327,8 @@ def fingerprint(t: pd.Series | dict) -> str:
     tip = " · ".join(f"{k} {v:.2f}" for (k, _), v in zip(FINGERPRINT, vals))
     bars = "".join(f'<i style="height:{max(2, round(28 * v))}px"></i>' for v in vals)
     keys = "".join(f"<span>{c}</span>" for _, c in FINGERPRINT)
-    return f'<div class="bars" title="{html.escape(tip)}" aria-label="Audio fingerprint: {html.escape(tip)}">{bars}</div><div class="keys" aria-hidden="true">{keys}</div>'
+    return (f'<div class="glyph" title="{html.escape(tip)}" aria-label="Audio fingerprint: {html.escape(tip)}">'
+            f'<div class="bars">{bars}</div><div class="keys" aria-hidden="true">{keys}</div></div>')
 
 
 def track_card(engine, row: pd.Series, rank: int | None = None, reason: str | None = None,
@@ -512,7 +521,7 @@ def admin_login() -> None:
         return
     with st.sidebar.expander("Researcher login", icon=":material/lock:", expanded=False):
         if st.session_state.get("admin_ok"):
-            st.caption("Logged in as researcher.")
+            st.caption("Logged in as researcher")
             if st.button("Log out", key="admin_logout"):
                 st.session_state.admin_ok = False
                 st.rerun()
