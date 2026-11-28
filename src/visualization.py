@@ -1,6 +1,7 @@
 """Plotly charts in the SoundBridge visual language (graphite surface; series colours below are CVD-checked).
 
-Colour roles (validated for CVD separation on the #12111c surface):
+Colour roles (CVD separation was validated on the original #12111c surface; charts now sit on the
+#1b1b1c graphite surface, which is close in luminance — re-check if the surface changes further):
 * PAIR       - "your profile" violet vs "this track" aqua (2-series comparisons)
 * CATEGORICAL- fixed order, never cycled; series beyond six fold into small multiples
 * SEQ        - single-hue violet ramp for magnitude
@@ -36,7 +37,7 @@ def _register() -> None:
     t = go.layout.Template()
     t.layout = go.Layout(
         font=dict(family=FONT, color=TEXT_2, size=12),
-        title=dict(font=dict(family=FONT, size=15, color=TEXT, weight=500), x=0.02, xanchor="left"),
+        title=dict(font=dict(family=FONT, size=15, color=TEXT), x=0.02, xanchor="left"),
         paper_bgcolor=PAPER,
         plot_bgcolor=PAPER,
         colorway=CATEGORICAL,
